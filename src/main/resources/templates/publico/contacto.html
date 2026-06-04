@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contacto - Academia San Luis</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .navbar { background: #1a3a5c; padding: 15px 40px; display: flex; justify-content: space-between; align-items: center; }
+        .navbar .logo { color: white; font-size: 1.4rem; font-weight: 700; }
+        .navbar a { color: #e2e8f0; text-decoration: none; margin-left: 25px; }
+        .navbar a:hover { color: #63b3ed; }
+        .container { max-width: 700px; margin: 40px auto; padding: 20px; text-align: center; }
+        h1 { color: #1a3a5c; margin-bottom: 20px; }
+        p { color: #4a5568; margin: 10px 0; font-size: 1.1rem; }
+        .contact-card { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); margin: 20px 0; }
+        .btn-whatsapp {
+            display: inline-block; background: #25D366; color: white;
+            padding: 14px 30px; border-radius: 50px; text-decoration: none;
+            font-size: 1.1rem; font-weight: 600; margin-top: 15px;
+            transition: all 0.3s; box-shadow: 0 4px 15px rgba(37, 211, 102, 0.4);
+        }
+        .btn-whatsapp:hover { background: #1ebc59; transform: translateY(-2px); }
+        .emoji { font-size: 2rem; }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo">🎓 Academia San Luis</div>
+        <div>
+            <a href="/">Inicio</a>
+            <a href="/publico/cursos">Cursos</a>
+            <a href="/publico/contacto">Contacto</a>
+            <a href="/auth/login">Iniciar Sesión</a>
+        </div>
+    </nav>
+    <div class="container">
+        <h1>📞 Contacto</h1>
+        <div class="contact-card">
+            <p>📍 <strong>Centro Escolar Católico San Luis</strong></p>
+            <p>📱 <strong>Teléfono:</strong> 2276-1303</p>
+            <p>📧 <strong>Email:</strong> info@sanluis.edu.sv</p>
+            <p>🕐 <strong>Horario:</strong> Lunes a Viernes 7:00 AM - 3:00 PM</p>
+        </div>
+        <div class="contact-card">
+            <p><span class="emoji">💬</span></p>
+            <p><strong>¿Prefieres escribirnos por WhatsApp?</strong></p>
+            <p>Estamos disponibles para resolver tus dudas al instante.</p>
+            <a href="https://wa.me/50363088331?text=Hola,%20quisiera%20información%20sobre%20los%20cursos%20de%20la%20Academia%20San%20Luis" 
+               target="_blank" class="btn-whatsapp">
+               🟢 Chatear por WhatsApp
+            </a>
+        </div>
+    </div>
+</body>
+</html> 

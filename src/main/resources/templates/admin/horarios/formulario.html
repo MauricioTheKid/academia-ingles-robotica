@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${horario.id != null ? 'Editar' : 'Nuevo'} + ' Horario'">Horario</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f7fafc; display: flex; }
+        .sidebar { width: 250px; background: #1a3a5c; min-height: 100vh; padding: 20px; color: white; }
+        .sidebar h2 { font-size: 1.2rem; margin-bottom: 25px; }
+        .sidebar a { display: block; color: #e2e8f0; text-decoration: none; padding: 10px; margin: 5px 0; border-radius: 6px; }
+        .main { flex: 1; padding: 30px; }
+        .header { background: white; padding: 20px; border-radius: 10px; margin-bottom: 25px; }
+        .form-container { background: white; padding: 30px; border-radius: 10px; max-width: 600px; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; font-weight: 600; margin-bottom: 5px; }
+        .form-group input, .form-group select { width: 100%; padding: 10px; border: 2px solid #e2e8f0; border-radius: 8px; }
+        .btn { padding: 12px 25px; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; }
+        .btn-primary { background: #3182ce; color: white; }
+        .btn-secondary { background: #e2e8f0; color: #2d3748; text-decoration: none; padding: 12px 25px; border-radius: 8px; }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <h2>Admin Panel</h2>
+        <a href="/admin/dashboard">Dashboard</a>
+        <a href="/admin/usuarios">Usuarios</a>
+        <a href="/cursos">Cursos</a>
+        <a href="/horarios">Horarios</a>
+        <a href="/auth/logout">Salir</a>
+    </div>
+    <div class="main">
+        <div class="header"><h1 th:text="${horario.id != null ? 'Editar' : 'Nuevo'} + ' Horario'">Horario</h1></div>
+        <div class="form-container">
+            <form th:action="@{/horarios/guardar}" th:object="${horario}" method="post">
+                <input type="hidden" th:field="*{id}">
+                <div class="form-group">
+                    <label>Curso</label>
+                    <select th:field="*{curso.id}" required>
+                        <option value="">Seleccione</option>
+                        <option th:each="curso : ${cursos}" th:value="${curso.id}" th:text="${curso.nombre}">Curso</option>
+                    </select>
+                </div>
+                <div class="form-group"><label>Día</label><input type="text" th:field="*{diaSemana}" required></div>
+                <div class="form-group"><label>Hora Inicio</label><input type="time" th:field="*{horaInicio}" required></div>
+                <div class="form-group"><label>Hora Fin</label><input type="time" th:field="*{horaFin}" required></div>
+                <div class="form-group"><label>Cupo Máximo</label><input type="number" th:field="*{cupoMaximo}" required></div>
+                <button type="submit" class="btn btn-primary">Guardar</button>
+                <a href="/horarios" class="btn btn-secondary">Cancelar</a>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

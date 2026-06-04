@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Academia San Luis - Inglés & Robótica</title>
+    <style>
+        :root {
+            --bg: #ffffff;
+            --text: #2d3748;
+            --navbar: #1a3a5c;
+            --card-bg: #ffffff;
+            --card-shadow: rgba(0,0,0,0.1);
+            --section-bg: #f7fafc;
+        }
+        .dark-mode {
+            --bg: #1a202c;
+            --text: #e2e8f0;
+            --navbar: #0d1b2a;
+            --card-bg: #2d3748;
+            --card-shadow: rgba(0,0,0,0.4);
+            --section-bg: #171923;
+        }
+        *{margin:0;padding:0;box-sizing:border-box;}
+        body{font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;color:var(--text);background:var(--bg);transition:all 0.3s;}
+        .navbar{background:var(--navbar);padding:15px 40px;display:flex;justify-content:space-between;align-items:center;box-shadow:0 2px 10px rgba(0,0,0,0.2);}
+        .navbar .logo{color:white;font-size:1.4rem;font-weight:700;}
+        .navbar .nav-links a{color:#e2e8f0;text-decoration:none;margin-left:25px;font-weight:500;transition:color 0.3s;}
+        .navbar .nav-links a:hover{color:#63b3ed;}
+        .btn-nav{background:#3182ce;padding:8px 20px;border-radius:6px;color:white!important;}
+        .btn-toggle{background:transparent;border:1px solid white;color:white;padding:6px 12px;border-radius:6px;cursor:pointer;margin-left:15px;font-size:0.9rem;}
+        .hero{background:linear-gradient(135deg,#1a3a5c 0%,#2c5282 50%,#3182ce 100%);color:white;text-align:center;padding:80px 20px;}
+        .hero h1{font-size:2.8rem;margin-bottom:15px;}
+        .hero p{font-size:1.2rem;margin-bottom:30px;opacity:0.9;}
+        .btn-hero{display:inline-block;background:white;color:#1a3a5c;padding:14px 35px;border-radius:8px;text-decoration:none;font-weight:700;font-size:1.1rem;transition:transform 0.2s;}
+        .btn-hero:hover{transform:translateY(-3px);box-shadow:0 10px 30px rgba(0,0,0,0.3);}
+        .section{padding:60px 40px;max-width:1100px;margin:0 auto;text-align:center;background:var(--bg);}
+        .section h2{font-size:2rem;color:var(--text);margin-bottom:40px;}
+        .cards{display:flex;gap:25px;justify-content:center;flex-wrap:wrap;}
+        .card{background:var(--card-bg);border-radius:12px;box-shadow:0 5px 20px var(--card-shadow);padding:30px;flex:1;min-width:250px;max-width:320px;transition:transform 0.3s;}
+        .card:hover{transform:translateY(-5px);}
+        .card .icon{font-size:3rem;margin-bottom:15px;}
+        .card h3{color:var(--text);margin-bottom:10px;}
+        .card p{color:var(--text);opacity:0.8;}
+        .footer{background:var(--navbar);color:#e2e8f0;text-align:center;padding:25px;margin-top:40px;}
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo">🎓 Academia San Luis</div>
+        <div class="nav-links">
+            <a href="/">Inicio</a>
+            <a href="/publico/cursos">Cursos</a>
+            <a href="/publico/contacto">Contacto</a>
+            <a href="/auth/login" class="btn-nav">Iniciar Sesión</a>
+            <button class="btn-toggle" onclick="toggleDarkMode()">🌓 Modo</button>
+        </div>
+    </nav>
+
+    <section class="hero">
+        <h1>🚀 Aprende Inglés & Robótica</h1>
+        <p>Educación del siglo XXI: pensamiento crítico, creatividad, colaboración y tecnología</p>
+        <a href="/auth/registro" class="btn-hero">¡Comienza Ahora!</a>
+    </section>
+
+    <section class="section">
+        <h2>Nuestros Programas</h2>
+        <div class="cards">
+            <div class="card"><div class="icon">🗣️</div><h3>Inglés Comunicativo</h3><p>Niveles A1 a B2. Clases presenciales y virtuales con profesores certificados.</p></div>
+            <div class="card"><div class="icon">🤖</div><h3>Robótica Educativa</h3><p>Aprende programación y robótica con kits prácticos y proyectos divertidos.</p></div>
+            <div class="card"><div class="icon">💻</div><h3>Habilidades Digitales</h3><p>Alfabetización digital, herramientas colaborativas y pensamiento computacional.</p></div>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <p>© 2026 Centro Escolar Católico San Luis - Todos los derechos reservados</p>
+        <p style="margin-top:5px;">📞 2276-1303 | 📧 info@sanluis.edu.sv</p>
+    </footer>
+
+    <script>
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark-mode');
+            localStorage.setItem('darkMode', document.body.classList.contains('dark-mode'));
+        }
+        // Cargar preferencia guardada
+        if (localStorage.getItem('darkMode') === 'true') {
+            document.body.classList.add('dark-mode');
+        }
+    </script>
+</body>
+</html> 

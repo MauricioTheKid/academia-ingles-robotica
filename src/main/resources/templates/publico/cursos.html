@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cursos - Academia San Luis</title>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box;}
+        body{font-family:'Segoe UI',sans-serif;background:#f7fafc;}
+        .navbar{background:#1a3a5c;padding:15px 40px;display:flex;justify-content:space-between;align-items:center;}
+        .navbar .logo{color:white;font-size:1.4rem;font-weight:700;}
+        .navbar a{color:#e2e8f0;text-decoration:none;margin-left:25px;}
+        .container{max-width:1100px;margin:40px auto;padding:20px;}
+        h1{text-align:center;color:#1a3a5c;margin-bottom:10px;}
+        .subtitle{text-align:center;color:#718096;margin-bottom:20px;}
+        .btn-nuevo{display:inline-block;background:#38a169;color:white;padding:10px 20px;border-radius:8px;text-decoration:none;margin-bottom:20px;font-weight:600;}
+        table{width:100%;border-collapse:collapse;background:white;border-radius:10px;overflow:hidden;}
+        th,td{padding:12px 15px;text-align:left;border-bottom:1px solid #e2e8f0;}
+        th{background:#edf2f7;color:#2d3748;}
+        tr:hover{background:#f7fafc;}
+        .btn{padding:6px 14px;border-radius:6px;text-decoration:none;font-size:0.8rem;font-weight:600;color:white;margin:0 3px;}
+        .btn-edit{background:#3182ce;}
+        .btn-delete{background:#e53e3e;}
+        .btn-reservar{background:#38a169;color:white;padding:5px 10px;border-radius:5px;text-decoration:none;font-size:0.75rem;}
+        .badge{padding:4px 10px;border-radius:20px;font-size:0.75rem;}
+        .badge-activo{background:#c6f6d5;color:#276749;}
+        .search-box{width:100%;max-width:400px;padding:10px 15px;border:2px solid #e2e8f0;border-radius:8px;font-size:0.95rem;transition:border-color 0.3s;}
+        .search-box:focus{outline:none;border-color:#3182ce;box-shadow:0 0 0 3px rgba(49,130,206,0.2);}
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo">🎓 Academia San Luis</div>
+        <div>
+            <a href="/">Inicio</a>
+            <a href="/publico/cursos">Cursos</a>
+            <a href="/publico/contacto">Contacto</a>
+            <a href="/auth/login">Iniciar Sesión</a>
+        </div>
+    </nav>
+    <div class="container">
+        <h1>📚 Gestión de Cursos</h1>
+        <p class="subtitle">Administra los cursos de inglés y robótica</p>
+
+        <div style="margin-bottom:15px;text-align:center;">
+            <input type="text" id="buscarCurso" placeholder="🔍 Buscar curso por nombre..." class="search-box" onkeyup="filtrarCursos()">
+        </div>
+
+        <a th:if="${session.usuarioEmail == 'admin@test.com'}" href="/cursos/nuevo" class="btn-nuevo" title="Crear un nuevo curso">➕ Nuevo Curso</a>
+
+        <table id="tablaCursos">
+            <thead>
+                <tr>
+                    <th>ID</th><th>Nombre</th><th>Nivel</th><th>Duración</th><th>Precio</th><th>Estado</th>
+                    <th>Acción</th>
+                    <th th:if="${session.usuarioEmail == 'admin@test.com'}">Admin</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="curso : ${cursos}">
+                    <td th:text="${curso.id}">1</td>
+                    <td th:text="${curso.nombre}">Curso</td>
+                    <td th:text="${curso.nivel.nombre}">Nivel</td>
+                    <td th:text="${curso.duracionSemanas} + ' sem'">12 sem</td>
+                    <td th:text="'$' + ${curso.precio}">$75</td>
+                    <td><span class="badge badge-activo" th:text="${curso.activo ? 'Activo' : 'Inactivo'}">Activo</span></td>
+                    <td>
+                        <a th:href="@{/cursos/horarios/{id}(id=${curso.id})}" class="btn btn-reservar" title="Ver horarios y reservar cupo">📅 Reservar</a>
+                    </td>
+                    <td th:if="${session.usuarioEmail == 'admin@test.com'}">
+                        <a th:href="@{/cursos/editar/{id}(id=${curso.id})}" class="btn btn-edit" title="Editar este curso">✏️ Editar</a>
+                        <a th:href="@{/cursos/eliminar/{id}(id=${curso.id})}" class="btn btn-delete" onclick="return confirm('¿Eliminar este curso?')" title="Eliminar este curso permanentemente">🗑️ Eliminar</a>
+                    </td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(cursos)}">
+                    <td th:colspan="${session.usuarioEmail == 'admin@test.com' ? 8 : 7}" style="text-align:center;">No hay cursos registrados.</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        function filtrarCursos() {
+            var input = document.getElementById("buscarCurso");
+            var filter = input.value.toLowerCase();
+            var table = document.getElementById("tablaCursos");
+            var rows = table.getElementsByTagName("tr");
+            for (var i = 1; i < rows.length; i++) {
+                var curso = rows[i].getElementsByTagName("td")[1];
+                if (curso) {
+                    var texto = curso.textContent || curso.innerText;
+                    rows[i].style.display = texto.toLowerCase().indexOf(filter) > -1 ? "" : "none";
+                }
+            }
+        }
+    </script>
+</body>
+</html> 

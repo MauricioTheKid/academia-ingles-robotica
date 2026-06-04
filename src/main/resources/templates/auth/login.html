@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Iniciar Sesión - Academia San Luis</title>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box;}
+        body{font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;background:linear-gradient(135deg,#1a3a5c 0%,#2c5282 50%,#3182ce 100%);min-height:100vh;display:flex;justify-content:center;align-items:center;padding:20px;}
+        .login-container{background:white;border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,0.3);width:100%;max-width:420px;padding:40px;}
+        .login-header{text-align:center;margin-bottom:30px;}
+        .login-header h1{color:#1a3a5c;font-size:1.8rem;margin-bottom:8px;}
+        .login-header p{color:#718096;font-size:0.9rem;}
+        .form-group{margin-bottom:20px;}
+        .form-group label{display:block;color:#2d3748;font-weight:600;margin-bottom:6px;font-size:0.85rem;}
+        .form-group input{width:100%;padding:12px 15px;border:2px solid #e2e8f0;border-radius:8px;font-size:1rem;transition:border-color 0.3s;}
+        .form-group input:focus{outline:none;border-color:#3182ce;box-shadow:0 0 0 3px rgba(49,130,206,0.2);}
+        .btn-login{width:100%;padding:13px;background:linear-gradient(135deg,#2c5282,#3182ce);color:white;border:none;border-radius:8px;font-size:1rem;font-weight:600;cursor:pointer;transition:transform 0.2s,box-shadow 0.2s;}
+        .btn-login:hover{transform:translateY(-2px);box-shadow:0 8px 25px rgba(49,130,206,0.4);}
+        .alert{padding:12px 15px;border-radius:8px;margin-bottom:20px;font-size:0.85rem;}
+        .alert-danger{background:#fff5f5;color:#c53030;border:1px solid #feb2b2;}
+        .alert-success{background:#f0fff4;color:#276749;border:1px solid #9ae6b4;}
+        .register-link{text-align:center;margin-top:20px;color:#718096;font-size:0.85rem;}
+        .register-link a{color:#3182ce;text-decoration:none;font-weight:600;}
+        .register-link a:hover{text-decoration:underline;}
+        .logo{font-size:3rem;margin-bottom:10px;}
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-header">
+            <div class="logo">🎓</div>
+            <h1>Academia San Luis</h1>
+            <p>Inglés & Robótica</p>
+        </div>
+        <div th:if="${error}" class="alert alert-danger"><span th:text="${error}">Error</span></div>
+        <div th:if="${param.registro}" class="alert alert-success">✅ Registro exitoso. Inicia sesión con tus credenciales.</div>
+        <div th:if="${param.logout}" class="alert alert-success">✅ Has cerrado sesión correctamente.</div>
+        <div th:if="${success}" class="alert alert-success"><span th:text="${success}">Éxito</span></div>
+        <form th:action="@{/auth/login}" method="post">
+            <div class="form-group"><label for="email">Correo electrónico</label><input type="email" id="email" name="email" placeholder="ejemplo@correo.com" required></div>
+            <div class="form-group"><label for="password">Contraseña</label><input type="password" id="password" name="password" placeholder="••••••••" required></div>
+            <button type="submit" class="btn-login">🔐 Iniciar Sesión</button>
+        </form>
+        <div class="register-link">¿No tienes cuenta? <a href="/auth/registro">Regístrate aquí</a></div>
+        <div class="register-link" style="margin-top:10px;">
+            <a href="/auth/recuperar">¿Olvidaste tu contraseña?</a>
+        </div>
+    </div>
+</body>
+</html> 

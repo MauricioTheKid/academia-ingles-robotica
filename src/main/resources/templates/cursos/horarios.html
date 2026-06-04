@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Horarios - Academia San Luis</title>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box;}
+        body{font-family:'Segoe UI',sans-serif;background:#f7fafc;display:flex;}
+        .sidebar{width:250px;background:#1a3a5c;min-height:100vh;padding:20px;color:white;}
+        .sidebar h2{font-size:1.2rem;margin-bottom:25px;}
+        .sidebar a{display:block;color:#e2e8f0;text-decoration:none;padding:10px;margin:5px 0;border-radius:6px;}
+        .sidebar a:hover{background:#2c5282;}
+        .main{flex:1;padding:30px;}
+        .header{background:white;padding:20px;border-radius:10px;margin-bottom:25px;}
+        h1{color:#1a3a5c;}
+        .card{background:white;padding:20px;border-radius:10px;margin:10px 0;border-left:4px solid #3182ce;display:flex;justify-content:space-between;align-items:center;box-shadow:0 1px 3px rgba(0,0,0,0.1);}
+        .btn-reservar{background:#38a169;color:white;padding:8px 16px;border-radius:6px;text-decoration:none;font-weight:600;}
+        .btn-reservar:hover{background:#2f855a;}
+        .btn-volver{background:#718096;color:white;padding:8px 16px;border-radius:6px;text-decoration:none;margin-bottom:20px;display:inline-block;}
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <h2>🎓 San Luis</h2>
+        <a href="/">🏠 Inicio</a>
+        <a href="/cursos">📚 Cursos</a>
+        <a href="/reservas">📅 Mis Reservas</a>
+        <a href="/auth/logout">🚪 Salir</a>
+    </div>
+    <div class="main">
+        <a href="/cursos" class="btn-volver">← Volver a Cursos</a>
+        <div class="header">
+            <h1 th:text="'Horarios: ' + ${curso.nombre}">Horarios del Curso</h1>
+        </div>
+        <div th:if="${#lists.isEmpty(horarios)}" style="text-align:center;padding:40px;">
+            <p>No hay horarios disponibles para este curso.</p>
+        </div>
+        <div th:each="horario : ${horarios}" class="card">
+            <div>
+                <strong th:text="${horario.diaSemana}">Día</strong><br>
+                <span th:text="${horario.horaInicio} + ' - ' + ${horario.horaFin}">Horario</span><br>
+                <small>Cupos: <span th:text="${horario.cupoMaximo}">0</span></small>
+            </div>
+            <a th:href="@{/reservas/crear/{id}(id=${horario.id})}" class="btn-reservar">📅 Reservar</a>
+        </div>
+    </div>
+</body>
+</html> 

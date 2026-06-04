@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Horarios - Admin</title>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box;}
+        body{font-family:'Segoe UI',sans-serif;background:#f7fafc;display:flex;}
+        .sidebar{width:250px;background:#1a3a5c;min-height:100vh;padding:20px;color:white;}
+        .sidebar h2{font-size:1.2rem;margin-bottom:25px;}
+        .sidebar a{display:block;color:#e2e8f0;text-decoration:none;padding:10px;margin:5px 0;border-radius:6px;}
+        .sidebar a:hover{background:#2c5282;}
+        .main{flex:1;padding:30px;}
+        .header{background:white;padding:20px;border-radius:10px;margin-bottom:25px;}
+        h1{color:#1a3a5c;}
+        .btn-nuevo{background:#38a169;color:white;padding:10px 20px;border-radius:8px;text-decoration:none;display:inline-block;margin-bottom:20px;font-weight:600;}
+        table{width:100%;border-collapse:collapse;background:white;border-radius:10px;overflow:hidden;}
+        th,td{padding:12px;text-align:left;border-bottom:1px solid #e2e8f0;}
+        th{background:#edf2f7;}
+        .btn{padding:6px 14px;border-radius:6px;text-decoration:none;font-size:0.8rem;font-weight:600;color:white;margin:0 2px;}
+        .btn-edit{background:#3182ce;}
+        .btn-delete{background:#e53e3e;}
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <h2>⚙️ Admin Panel</h2>
+        <a href="/admin/dashboard">📊 Dashboard</a>
+        <a href="/admin/usuarios">👥 Usuarios</a>
+        <a href="/cursos">📚 Cursos</a>
+        <a href="/horarios" style="background:#2c5282;">🕐 Horarios</a>
+        <a href="/perfil">👤 Mi Perfil</a>
+        <a href="/auth/logout">🚪 Salir</a>
+    </div>
+    <div class="main">
+        <div class="header"><h1>🕐 Gestión de Horarios</h1></div>
+        <a th:if="${session.usuarioEmail == 'admin@test.com'}" href="/horarios/nuevo" class="btn-nuevo" title="Crear un nuevo horario">➕ Nuevo Horario</a>
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th><th>Curso</th><th>Día</th><th>Inicio</th><th>Fin</th><th>Cupo</th>
+                    <th th:if="${session.usuarioEmail == 'admin@test.com'}">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="horario : ${horarios}">
+                    <td th:text="${horario.id}">1</td>
+                    <td th:text="${horario.curso.nombre}">Curso</td>
+                    <td th:text="${horario.diaSemana}">Día</td>
+                    <td th:text="${horario.horaInicio}">Inicio</td>
+                    <td th:text="${horario.horaFin}">Fin</td>
+                    <td th:text="${horario.cupoMaximo}">Cupo</td>
+                    <td th:if="${session.usuarioEmail == 'admin@test.com'}">
+                        <a th:href="@{/horarios/editar/{id}(id=${horario.id})}" class="btn btn-edit" title="Editar este horario">✏️</a>
+                        <a th:href="@{/horarios/eliminar/{id}(id=${horario.id})}" class="btn btn-delete" onclick="return confirm('¿Eliminar?')" title="Eliminar este horario">🗑️</a>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</body>
+</html> 

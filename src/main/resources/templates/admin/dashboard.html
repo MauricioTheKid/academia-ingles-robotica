@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Administración - Academia San Luis</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box;}
+        body{font-family:'Segoe UI',sans-serif;background:#f7fafc;display:flex;}
+        .sidebar{width:250px;background:#1a3a5c;min-height:100vh;padding:20px;color:white;}
+        .sidebar h2{font-size:1.2rem;margin-bottom:25px;}
+        .sidebar a{display:block;color:#e2e8f0;text-decoration:none;padding:10px;margin:5px 0;border-radius:6px;}
+        .sidebar a:hover{background:#2c5282;}
+        .main{flex:1;padding:30px;}
+        .header{background:white;padding:20px;border-radius:10px;margin-bottom:25px;}
+        .stats{display:flex;gap:20px;flex-wrap:wrap;margin-bottom:25px;}
+        .stat-card{background:white;padding:25px;border-radius:10px;box-shadow:0 2px 10px rgba(0,0,0,0.1);flex:1;min-width:180px;text-align:center;}
+        .stat-card h3{font-size:2.5rem;}
+        .stat-card p{color:#718096;margin-top:5px;}
+        .blue{color:#3182ce;}.green{color:#38a169;}.purple{color:#805ad5;}.orange{color:#dd6b20;}
+        .quick-actions{background:white;padding:20px;border-radius:10px;margin-top:25px;}
+        .btn{display:inline-block;padding:10px 20px;margin:5px;border-radius:6px;text-decoration:none;color:white;font-weight:600;}
+        .btn-blue{background:#3182ce;}.btn-green{background:#38a169;}.btn-purple{background:#805ad5;}.btn-orange{background:#dd6b20;}
+        .section{background:white;padding:20px;border-radius:10px;margin-bottom:25px;box-shadow:0 2px 10px rgba(0,0,0,0.1);}
+        h2{color:#1a3a5c;margin-bottom:15px;}
+        h3{color:#2c5282;margin-bottom:10px;}
+        table{width:100%;border-collapse:collapse;}
+        th,td{padding:10px;text-align:left;border-bottom:1px solid #e2e8f0;}
+        th{background:#edf2f7;font-size:0.8rem;}
+        td{font-size:0.8rem;}
+        .badge{padding:4px 8px;border-radius:20px;font-size:0.7rem;}
+        .badge-success{background:#c6f6d5;color:#276749;}
+        .badge-warning{background:#fefcbf;color:#975a16;}
+        .badge-danger{background:#fed7d7;color:#9b2c2c;}
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <h2>⚙️ Admin Panel</h2>
+        <a href="/admin/dashboard">📊 Dashboard</a>
+        <a href="/admin/usuarios">👥 Usuarios</a>
+        <a href="/cursos">📚 Cursos</a>
+        <a href="/horarios">🕐 Horarios</a>
+        <a href="/materiales">📁 Materiales</a>
+        <a href="/admin/reportes">📋 Reportes</a>
+        <a href="/perfil">👤 Mi Perfil</a>
+        <a href="/auth/logout">🚪 Cerrar Sesión</a>
+    </div>
+    <div class="main">
+        <div class="header"><h1>📊 Panel de Administración</h1><p style="color:#718096;">Centro Escolar Católico San Luis</p></div>
+
+        <div class="stats">
+            <div class="stat-card"><h3 class="blue" th:text="${totalUsuarios}">0</h3><p>Usuarios Totales</p></div>
+            <div class="stat-card"><h3 class="green" th:text="${totalCursos}">0</h3><p>Cursos Activos</p></div>
+            <div class="stat-card"><h3 class="purple" th:text="${totalReservas}">0</h3><p>Reservas Totales</p></div>
+            <div class="stat-card"><h3 class="orange">$850</h3><p>Ingresos del Mes</p></div>
+        </div>
+
+        <div class="section">
+            <h2>📈 Gráficos de Reservas</h2>
+            <div style="display:flex;gap:20px;flex-wrap:wrap;">
+                <div style="flex:1;min-width:300px;max-width:450px;"><canvas id="chartReservas"></canvas></div>
+                <div style="flex:1;min-width:300px;max-width:450px;"><canvas id="chartCursos"></canvas></div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>📊 Reporte de Reservas</h2>
+            <div class="stats" style="margin-bottom:15px;">
+                <div class="stat-card"><h3 class="purple" th:text="${totalReservas}">0</h3><p>Total Reservas</p></div>
+                <div class="stat-card"><h3 style="color:#d69e2e;" th:text="${pendientes}">0</h3><p>Pendientes</p></div>
+                <div class="stat-card"><h3 class="green" th:text="${confirmadas}">0</h3><p>Confirmadas</p></div>
+            </div>
+            <h3>Últimas Reservas</h3>
+            <table>
+                <thead><tr><th>ID</th><th>Usuario</th><th>Curso</th><th>Día</th><th>Estado</th><th>Acción</th></tr></thead>
+                <tbody>
+                    <tr th:each="reserva : ${ultimasReservas}">
+                        <td th:text="${reserva.id}">1</td>
+                        <td th:text="${reserva.usuario.nombre} + ' ' + ${reserva.usuario.apellido}">Usuario</td>
+                        <td th:text="${reserva.horario.curso.nombre}">Curso</td>
+                        <td th:text="${reserva.horario.diaSemana}">Día</td>
+                        <td>
+                            <span th:if="${reserva.estado == 'CONFIRMADA'}" class="badge badge-success">Confirmada</span>
+                            <span th:if="${reserva.estado == 'PENDIENTE'}" class="badge badge-warning">Pendiente</span>
+                            <span th:if="${reserva.estado == 'CANCELADA'}" class="badge badge-danger">Cancelada</span>
+                        </td>
+                        <td>
+                            <a th:if="${reserva.estado == 'PENDIENTE'}" th:href="@{/admin/confirmar-reserva/{id}(id=${reserva.id})}" style="background:#38a169;color:white;text-decoration:none;padding:3px 6px;border-radius:3px;font-size:0.65rem;">✅</a>
+                            <a th:if="${reserva.estado == 'PENDIENTE'}" th:href="@{/admin/cancelar-reserva/{id}(id=${reserva.id})}" style="background:#e53e3e;color:white;text-decoration:none;padding:3px 6px;border-radius:3px;font-size:0.65rem;margin-left:4px;" onclick="return confirm('¿Cancelar esta reserva?')">❌</a>
+                            <span th:if="${reserva.estado == 'CONFIRMADA'}" style="color:#38a169;font-size:0.7rem;">✓</span>
+                            <span th:if="${reserva.estado == 'CANCELADA'}" style="color:#e53e3e;font-size:0.7rem;">✗</span>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="quick-actions">
+            <h2>⚡ Acciones Rápidas</h2>
+            <a href="/admin/usuarios" class="btn btn-blue">👥 Gestionar Usuarios</a>
+            <a href="/cursos/nuevo" class="btn btn-green">📚 Nuevo Curso</a>
+            <a href="/horarios/nuevo" class="btn btn-orange">🕐 Nuevo Horario</a>
+            <a href="/admin/reportes" class="btn btn-purple">📋 Ver Reportes</a>
+        </div>
+    </div>
+
+    <script>
+        var pendientes = /*[[${pendientesAttr}]]*/ 8;
+        var confirmadas = /*[[${confirmadasAttr}]]*/ 3;
+        var usuarios = /*[[${usuariosAttr}]]*/ 8;
+        var cursos = /*[[${cursosAttr}]]*/ 5;
+        var reservas = /*[[${reservasAttr}]]*/ 11;
+        var ctx1 = document.getElementById('chartReservas').getContext('2d');
+        new Chart(ctx1, {type:'doughnut',data:{labels:['Pendientes','Confirmadas'],datasets:[{data:[pendientes,confirmadas],backgroundColor:['#d69e2e','#38a169'],borderWidth:1}]},options:{responsive:true,plugins:{legend:{position:'bottom'},title:{display:true,text:'Estado de Reservas'}}}});
+        var ctx2 = document.getElementById('chartCursos').getContext('2d');
+        new Chart(ctx2, {type:'bar',data:{labels:['Usuarios','Cursos','Reservas'],datasets:[{label:'Totales',data:[usuarios,cursos,reservas],backgroundColor:['#3182ce','#38a169','#805ad5'],borderWidth:1}]},options:{responsive:true,plugins:{legend:{display:false},title:{display:true,text:'Resumen General'}},scales:{y:{beginAtZero:true,ticks:{stepSize:1}}}}});
+    </script>
+</body>
+</html> 

@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mis Alumnos - Profesor</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f7fafc; display: flex; }
+        .sidebar { width: 250px; background: #1a3a5c; min-height: 100vh; padding: 20px; color: white; }
+        .sidebar h2 { font-size: 1.2rem; margin-bottom: 25px; }
+        .sidebar a { display: block; color: #e2e8f0; text-decoration: none; padding: 10px; margin: 5px 0; border-radius: 6px; }
+        .sidebar a:hover { background: #2c5282; }
+        .main { flex: 1; padding: 30px; }
+        .header { background: white; padding: 20px; border-radius: 10px; margin-bottom: 25px; }
+        h1 { color: #1a3a5c; }
+        table { width: 100%; border-collapse: collapse; background: white; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #e2e8f0; }
+        th { background: #edf2f7; }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <h2>Profesor</h2>
+        <a href="/">Inicio</a>
+        <a href="/profesor/dashboard">Dashboard</a>
+        <a href="/profesor/alumnos">Mis Alumnos</a>
+        <a href="/auth/logout">Salir</a>
+    </div>
+    <div class="main">
+        <div class="header"><h1>Mis Alumnos</h1></div>
+        <table>
+            <thead><tr><th>Nombre</th><th>Email</th><th>Curso</th><th>Asistencia</th><th>Nota</th></tr></thead>
+            <tbody>
+                <tr><td>Ana Lopez</td><td>ana@test.com</td><td>English Intermediate</td><td>90%</td><td>8.5</td></tr>
+                <tr><td>Juan Perez</td><td>juan@test.com</td><td>Robotica con Arduino</td><td>85%</td><td>7.8</td></tr>
+            </tbody>
+        </table>
+    </div>
+</body>
+</html> 

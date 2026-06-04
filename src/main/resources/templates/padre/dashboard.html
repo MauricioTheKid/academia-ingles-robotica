@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Padre - Academia San Luis</title>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box;}
+        body{font-family:'Segoe UI',sans-serif;background:#f7fafc;display:flex;}
+        .sidebar{width:250px;background:#553c9a;min-height:100vh;padding:20px;color:white;}
+        .sidebar h2{font-size:1.2rem;margin-bottom:25px;}
+        .sidebar a{display:block;color:#e2e8f0;text-decoration:none;padding:10px;margin:5px 0;border-radius:6px;}
+        .sidebar a:hover{background:#6b46c1;}
+        .main{flex:1;padding:30px;}
+        .header{background:white;padding:20px;border-radius:10px;margin-bottom:25px;}
+        .cards{display:flex;gap:20px;flex-wrap:wrap;margin-bottom:25px;}
+        .card{background:white;padding:20px;border-radius:10px;box-shadow:0 2px 10px rgba(0,0,0,0.1);flex:1;min-width:200px;text-align:center;}
+        .card h3{color:#553c9a;font-size:2rem;}
+        .card p{color:#718096;margin-top:5px;}
+        .section{background:white;padding:20px;border-radius:10px;}
+        table{width:100%;border-collapse:collapse;}
+        th,td{padding:12px;text-align:left;border-bottom:1px solid #e2e8f0;}
+        th{background:#edf2f7;}
+        .badge{padding:4px 10px;border-radius:20px;font-size:0.8rem;}
+        .badge-success{background:#c6f6d5;color:#276749;}
+        .badge-warning{background:#fefcbf;color:#975a16;}
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <h2>👨‍👩‍👧 San Luis</h2>
+        <a href="/">🏠 Inicio</a>
+        <a href="/cursos">📚 Cursos</a>
+        <a href="/materiales">📁 Materiales</a>
+        <a href="/reservas">📅 Reservas</a>
+        <a href="/perfil">👤 Mi Perfil</a>
+        <a href="/auth/logout">🚪 Salir</a>
+    </div>
+    <div class="main">
+        <div class="header"><h1>👋 Bienvenido, Padre de Familia</h1></div>
+        <div class="cards">
+            <div class="card"><h3 th:text="${totalCursos}">0</h3><p>Cursos Disponibles</p></div>
+            <div class="card"><h3 th:text="${totalReservas}">0</h3><p>Reservas Totales</p></div>
+            <div class="card"><h3>$160</h3><p>Inversión Mensual</p></div>
+        </div>
+        <div class="section">
+            <h2>📅 Reservas de la Familia</h2>
+            <table>
+                <thead><tr><th>Curso</th><th>Día</th><th>Horario</th><th>Estado</th></tr></thead>
+                <tbody>
+                    <tr th:each="reserva : ${reservas}">
+                        <td th:text="${reserva.horario.curso.nombre}">Curso</td>
+                        <td th:text="${reserva.horario.diaSemana}">Día</td>
+                        <td th:text="${reserva.horario.horaInicio} + ' - ' + ${reserva.horario.horaFin}">Horario</td>
+                        <td><span th:if="${reserva.estado == 'CONFIRMADA'}" class="badge badge-success">Activo</span><span th:if="${reserva.estado == 'PENDIENTE'}" class="badge badge-warning">Pendiente</span></td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(reservas)}"><td colspan="4" style="text-align:center;">No hay reservas registradas.</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+</html> 
