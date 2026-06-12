@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Inscripciones - Admin</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div th:replace="~{fragments/layout :: navbar}"></div>
+
+    <div class="container mt-4">
+        <h2><i class="fas fa-clipboard-list me-2"></i>Gestión de Inscripciones</h2>
+        
+        <!-- Stats Cards -->
+        <div class="row mt-3 mb-4">
+            <div class="col-md-4">
+                <div class="card bg-warning text-white">
+                    <div class="card-body">
+                        <h5 class="card-title">Pendientes de Pago</h5>
+                        <h2 th:text="${pendientesPago}">0</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card bg-info text-white">
+                    <div class="card-body">
+                        <h5 class="card-title">En Verificación</h5>
+                        <h2 th:text="${pagoVerificacion}">0</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card bg-success text-white">
+                    <div class="card-body">
+                        <h5 class="card-title">Activas</h5>
+                        <h2 th:text="${activas}">0</h2>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filtros -->
+        <div class="mb-3">
+            <div class="btn-group">
+                <a href="?filtro=TODAS" class="btn btn-outline-secondary" th:classappend="${filtroActual == 'TODAS'} ? 'active' : ''">Todas</a>
+                <a href="?filtro=PENDIENTE_PAGO" class="btn btn-outline-warning" th:classappend="${filtroActual == 'PENDIENTE_PAGO'} ? 'active' : ''">Pendientes Pago</a>
+                <a href="?filtro=PAGO_VERIFICACION" class="btn btn-outline-info" th:classappend="${filtroActual == 'PAGO_VERIFICACION'} ? 'active' : ''">En Verificación</a>
+                <a href="?filtro=ACTIVA" class="btn btn-outline-success" th:classappend="${filtroActual == 'ACTIVA'} ? 'active' : ''">Activas</a>
+            </div>
+        </div>
+
+        <!-- Tabla de inscripciones -->
+        <div class="card">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Alumno</th>
+                                <th>Curso</th>
+                                <th>Estado</th>
+                                <th>Fecha</th>
+                                <th>Comprobante</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="inscripcion : ${inscripciones}">
+                                <td th:text="${inscripcion.id}"></td>
+                                <td th:text="${inscripcion.usuario.nombre} + ' ' + ${inscripcion.usuario.apellido}"></td>
+                                <td th:text="${inscripcion.curso.nombre}"></td>
+                                <td>
+                                    <span class="badge" th:class="${inscripcion.estado == 'ACTIVA' ? 'bg-success' : (inscripcion.estado == 'PENDIENTE_PAGO' ? 'bg-warning' : 'bg-info')}">
+                                        <span th:text="${inscripcion.estado == 'PENDIENTE_PAGO' ? 'PENDIENTE PAGO' : (inscripcion.estado == 'PAGO_VERIFICACION' ? 'VERIFICANDO' : 'ACTIVA')}"></span>
+                                    </span>
+                                </td>
+                                <td th:text="${#dates.format(inscripcion.fechaInscripcion, 'dd/MM/yyyy')}"></td>
+                                <td>
+                                    <a th:href="${inscripcion.comprobantePagoUrl}" target="_blank" th:if="${inscripcion.comprobantePagoUrl != null}" class="btn btn-sm btn-primary">
+                                        <i class="fas fa-eye"></i> Ver
+                                    </a>
+                                    <span th:unless="${inscripcion.comprobantePagoUrl != null}" class="text-muted">No subido</span>
+                                </td>
+                                <td>
+                                    <a th:href="@{/admin/inscripciones/detalle/{id}(id=${inscripcion.id})}" class="btn btn-sm btn-info">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html> 

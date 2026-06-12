@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detalle de Inscripción - Academia San Luis</title>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box;}
+        body{font-family:'Segoe UI',sans-serif;background:#f7fafc;display:flex;}
+        .sidebar{width:250px;background:#9c4221;min-height:100vh;padding:20px;color:white;}
+        .sidebar h2{font-size:1.2rem;margin-bottom:25px;}
+        .sidebar a{display:block;color:#e2e8f0;text-decoration:none;padding:10px;margin:5px 0;border-radius:6px;}
+        .sidebar a:hover{background:#c05621;}
+        .main{flex:1;padding:30px;}
+        .header{background:white;padding:20px;border-radius:10px;margin-bottom:25px;box-shadow:0 1px 3px rgba(0,0,0,0.1);}
+        h1{color:#9c4221;}
+        .card{background:white;padding:20px;border-radius:10px;margin-bottom:20px;box-shadow:0 1px 3px rgba(0,0,0,0.1);}
+        .card h3{margin-bottom:15px;color:#9c4221;border-bottom:2px solid #f0f0f0;padding-bottom:8px;}
+        .badge{padding:4px 10px;border-radius:20px;font-size:0.8rem;display:inline-block;}
+        .badge-success{background:#c6f6d5;color:#276749;}
+        .badge-warning{background:#fefcbf;color:#975a16;}
+        .badge-info{background:#bee3f8;color:#2c5282;}
+        .btn{display:inline-block;padding:8px 16px;border-radius:5px;text-decoration:none;margin-top:10px;}
+        .btn-secondary{background:#718096;color:white;}
+        .btn-secondary:hover{background:#4a5568;}
+        table{width:100%;border-collapse:collapse;}
+        th,td{padding:10px;text-align:left;border-bottom:1px solid #e2e8f0;}
+        th{width:40%;background:#f7fafc;}
+        .row{display:flex;gap:20px;flex-wrap:wrap;}
+        .col{flex:1;min-width:300px;}
+        .text-muted{color:#718096;}
+        .documento-link{background:#f0fff4;padding:10px;border-radius:8px;margin-bottom:10px;}
+        .documento-link a{color:#38a169;text-decoration:none;}
+        .documento-link a:hover{text-decoration:underline;}
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <h2>🎓 San Luis</h2>
+        <a href="/">🏠 Inicio</a>
+        <a href="/cursos">📚 Cursos</a>
+        <a href="/materiales">📁 Materiales</a>
+        <a href="/reservas">📅 Mis Reservas</a>
+        <a href="/inscripcion/mis-inscripciones">📋 Mis Inscripciones</a>
+        <a href="/perfil">👤 Mi Perfil</a>
+        <a href="/auth/logout">🚪 Salir</a>
+    </div>
+    <div class="main">
+        <div class="header">
+            <h1>📋 Detalle de Inscripción #<span th:text="${inscripcion.id}"></span></h1>
+            <p style="color:#718096;">Centro Escolar Católico San Luis</p>
+        </div>
+
+        <div class="row">
+            <div class="col">
+                <!-- Información del Curso -->
+                <div class="card">
+                    <h3>📚 Información del Curso</h3>
+                    <table>
+                        <tr><th>Curso:</th><td th:text="${inscripcion.curso.nombre}">Robótica para Niños</td></tr>
+                        <tr><th>Horario:</th><td th:text="${inscripcion.reserva != null and inscripcion.reserva.horario != null ? inscripcion.reserva.horario.diaSemana + ' ' + inscripcion.reserva.horario.horaInicio + ' - ' + inscripcion.reserva.horario.horaFin : 'N/A'}">Lunes 16:00 - 18:00</td></tr>
+                        <tr><th>Precio:</th><td>$ <span th:text="${inscripcion.curso.precio}">60.00</span></td></tr>
+                        <tr><th>Fecha Inscripción:</th><td th:text="${#temporals.format(inscripcion.fechaInscripcion, 'dd/MM/yyyy HH:mm')}">06/06/2026 16:43</td></tr>
+                        <tr><th>Estado:</th>
+                            <td>
+                                <span class="badge" th:class="${inscripcion.estado == 'ACTIVA' ? 'badge-success' : (inscripcion.estado == 'PENDIENTE_PAGO' ? 'badge-warning' : 'badge-info')}">
+                                    <span th:text="${inscripcion.estado == 'PENDIENTE_PAGO' ? 'PENDIENTE DE PAGO' : (inscripcion.estado == 'PAGO_VERIFICACION' ? 'PAGO EN VERIFICACIÓN' : inscripcion.estado)}"></span>
+                                </span>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+
+                <!-- Información de Pago -->
+                <div class="card" th:if="${pago != null}">
+                    <h3>💰 Información de Pago</h3>
+                    <table>
+                        <tr><th>Método de Pago:</th><td th:text="${pago.metodoPago}">TRANSFERENCIA</td></tr>
+                        <tr th:if="${pago.referenciaPago}"><th>Referencia:</th><td th:text="${pago.referenciaPago}">TRF-001</td></tr>
+                        <tr><th>Monto Pagado:</th><td>$ <span th:text="${pago.monto}">60.00</span></td></tr>
+                        <tr><th>Estado del Pago:</th>
+                            <td>
+                                <span class="badge" th:class="${pago.estado == 'COMPLETADO' ? 'badge-success' : 'badge-warning'}" th:text="${pago.estado}">COMPLETADO</span>
+                            </td>
+                        </tr>
+                        <tr th:if="${pago.fechaPago}"><th>Fecha de Pago:</th><td th:text="${#temporals.format(pago.fechaPago, 'dd/MM/yyyy HH:mm')}"></td></tr>
+                    </table>
+                </div>
+            </div>
+
+            <div class="col">
+                <!-- Datos del Alumno -->
+                <div class="card">
+                    <h3>👤 Mis Datos</h3>
+                    <table>
+                        <tr><th>Nombre Completo:</th><td th:text="${inscripcion.usuario.nombre} + ' ' + ${inscripcion.usuario.apellido}">Carlos Martínez</td></tr>
+                        <tr><th>Email:</th><td th:text="${inscripcion.usuario.email}">carlos@test.com</td></tr>
+                        <tr th:if="${inscripcion.usuario.telefono}"><th>Teléfono:</th><td th:text="${inscripcion.usuario.telefono}"></td></tr>
+                        <tr><th>Fecha de Nacimiento:</th><td th:text="${inscripcion.fechaNacimiento}">15/05/2015</td></tr>
+                        <tr><th>Grado Escolar:</th><td th:text="${inscripcion.gradoEscolar}">5° Básico</td></tr>
+                        <tr><th>Contacto Emergencia:</th><td th:text="${inscripcion.contactoEmergencia} + ' - ' + ${inscripcion.telefonoEmergencia}">María González - 7890-1234</td></tr>
+                        <tr th:if="${inscripcion.alergias}"><th>Alergias:</th><td th:text="${inscripcion.alergias}">Ninguna</td></tr>
+                        <tr th:if="${inscripcion.condicionesMedicas}"><th>Condiciones Médicas:</th><td th:text="${inscripcion.condicionesMedicas}">Ninguna</td></tr>
+                        <tr><th>Talla Uniforme:</th><td th:text="${inscripcion.tallaUniforme}">M</td></tr>
+                        <tr><th>Autorización Fotos:</th><td th:text="${inscripcion.autorizacionFoto == 'SI' ? '✅ Sí autoriza' : '❌ No autoriza'}"></td></tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Documentos Subidos -->
+        <div class="card">
+            <h3>📄 Documentos Subidos</h3>
+            <div class="documento-link">
+                <strong>📄 Acta de Nacimiento:</strong><br>
+                <a th:href="${inscripcion.actaNacimientoUrl}" target="_blank" th:if="${inscripcion.actaNacimientoUrl != null}">
+                    Ver Documento
+                </a>
+                <span th:unless="${inscripcion.actaNacimientoUrl != null}" class="text-muted">No subida</span>
+            </div>
+            <div class="documento-link">
+                <strong>🧾 Comprobante de Pago:</strong><br>
+                <a th:href="${inscripcion.comprobantePagoUrl}" target="_blank" th:if="${inscripcion.comprobantePagoUrl != null}">
+                    Ver Comprobante
+                </a>
+                <span th:unless="${inscripcion.comprobantePagoUrl != null}" class="text-muted">No subido</span>
+            </div>
+        </div>
+
+        <!-- Botón Volver -->
+        <div style="margin-top:20px; text-align:center;">
+            <a href="/inscripcion/mis-inscripciones" class="btn btn-secondary">← Volver a Mis Inscripciones</a>
+        </div>
+    </div>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</body>
+</html> 

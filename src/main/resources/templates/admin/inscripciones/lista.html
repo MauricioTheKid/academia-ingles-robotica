@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Inscripciones - Admin</title>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box;}
+        body{font-family:'Segoe UI',sans-serif;background:#f7fafc;display:flex;}
+        .sidebar{width:250px;background:#1a3a5c;min-height:100vh;padding:20px;color:white;}
+        .sidebar h2{font-size:1.2rem;margin-bottom:25px;}
+        .sidebar a{display:block;color:#e2e8f0;text-decoration:none;padding:10px;margin:5px 0;border-radius:6px;}
+        .sidebar a:hover{background:#2c5282;}
+        .main{flex:1;padding:30px;}
+        .header{background:white;padding:20px;border-radius:10px;margin-bottom:25px;}
+        .stats{display:flex;gap:20px;flex-wrap:wrap;margin-bottom:25px;}
+        .stat-card{background:white;padding:20px;border-radius:10px;box-shadow:0 2px 10px rgba(0,0,0,0.1);flex:1;min-width:150px;text-align:center;}
+        .stat-card h3{font-size:2rem;}
+        .stat-card p{color:#718096;}
+        table{width:100%;border-collapse:collapse;background:white;border-radius:10px;overflow:hidden;}
+        th,td{padding:12px;text-align:left;border-bottom:1px solid #e2e8f0;}
+        th{background:#edf2f7;}
+        .badge{padding:4px 10px;border-radius:20px;font-size:0.8rem;}
+        .badge-success{background:#c6f6d5;color:#276749;}
+        .badge-warning{background:#fefcbf;color:#975a16;}
+        .badge-info{background:#bee3f8;color:#2c5282;}
+        .badge-danger{background:#fed7d7;color:#9b2c2c;}
+        .btn{display:inline-block;padding:6px 12px;border-radius:5px;text-decoration:none;font-size:0.75rem;}
+        .btn-primary{background:#3182ce;color:white;}
+        .btn-success{background:#38a169;color:white;}
+        .btn-danger{background:#e53e3e;color:white;}
+        .filtros{margin-bottom:15px;}
+        .filtro-btn{padding:8px 15px;margin-right:10px;border-radius:5px;text-decoration:none;background:#e2e8f0;color:#1a3a5c;}
+        .filtro-btn.activo{background:#1a3a5c;color:white;}
+        .text-muted{color:#718096;}
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <h2>⚙️ Admin Panel</h2>
+        <a href="/admin/dashboard">📊 Dashboard</a>
+        <a href="/admin/usuarios">👥 Usuarios</a>
+        <a href="/cursos">📚 Cursos</a>
+        <a href="/horarios">🕐 Horarios</a>
+        <a href="/materiales">📁 Materiales</a>
+        <a href="/admin/inscripciones">📋 Inscripciones</a>
+        <a href="/admin/reportes">📋 Reportes</a>
+        <a href="/perfil">👤 Mi Perfil</a>
+        <a href="/auth/logout">🚪 Cerrar Sesión</a>
+    </div>
+    <div class="main">
+        <div class="header"><h1>📋 Gestión de Inscripciones</h1></div>
+
+        <div class="stats">
+            <div class="stat-card"><h3 style="color:#d69e2e;" th:text="${pendientesPago}">0</h3><p>Pendientes de Pago</p></div>
+            <div class="stat-card"><h3 style="color:#3182ce;" th:text="${pagoVerificacion}">0</h3><p>En Verificación</p></div>
+            <div class="stat-card"><h3 style="color:#38a169;" th:text="${activas}">0</h3><p>Activas</p></div>
+        </div>
+
+        <div class="filtros">
+            <a href="?filtro=TODAS" class="filtro-btn" th:classappend="${filtroActual == 'TODAS'} ? 'activo' : ''">Todas</a>
+            <a href="?filtro=PENDIENTE_PAGO" class="filtro-btn" th:classappend="${filtroActual == 'PENDIENTE_PAGO'} ? 'activo' : ''">Pendientes Pago</a>
+            <a href="?filtro=PAGO_VERIFICACION" class="filtro-btn" th:classappend="${filtroActual == 'PAGO_VERIFICACION'} ? 'activo' : ''">En Verificación</a>
+            <a href="?filtro=ACTIVA" class="filtro-btn" th:classappend="${filtroActual == 'ACTIVA'} ? 'activo' : ''">Activas</a>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Alumno</th>
+                    <th>Curso</th>
+                    <th>Horario</th>
+                    <th>Estado</th>
+                    <th>Comprobante</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="inscripcion : ${inscripciones}">
+                    <td th:text="${inscripcion.id}">1</td>
+                    <td th:text="${inscripcion.usuario.nombre} + ' ' + ${inscripcion.usuario.apellido}">Carlos Martínez</td>
+                    <td th:text="${inscripcion.curso.nombre}">Robótica</td>
+                    <td th:text="${inscripcion.reserva != null and inscripcion.reserva.horario != null ? inscripcion.reserva.horario.diaSemana + ' ' + inscripcion.reserva.horario.horaInicio : 'N/A'}">Lunes 16:00</td>
+                    <td>
+                        <span class="badge" 
+                              th:class="${inscripcion.estado == 'ACTIVA' ? 'badge-success' : (inscripcion.estado == 'PENDIENTE_PAGO' ? 'badge-warning' : 'badge-info')}">
+                            <span th:text="${inscripcion.estado == 'PENDIENTE_PAGO' ? 'PENDIENTE PAGO' : (inscripcion.estado == 'PAGO_VERIFICACION' ? 'VERIFICANDO' : inscripcion.estado)}"></span>
+                        </span>
+                    </td>
+                    <td>
+                        <a th:href="${inscripcion.comprobantePagoUrl}" target="_blank" th:if="${inscripcion.comprobantePagoUrl != null}" class="btn btn-primary">Ver</a>
+                        <span th:unless="${inscripcion.comprobantePagoUrl != null}" class="text-muted">No subido</span>
+                    </td>
+                    <td>
+                        <a th:href="@{/admin/inscripciones/detalle/{id}(id=${inscripcion.id})}" class="btn btn-primary">👁️ Ver</a>
+                    </td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(inscripciones)}">
+                    <td colspan="7" style="text-align:center;">No hay inscripciones registradas.</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</body>
+</html> 

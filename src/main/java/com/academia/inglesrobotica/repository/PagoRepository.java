@@ -9,9 +9,9 @@ import java.util.Optional;
 @Repository
 public interface PagoRepository extends JpaRepository<Pago, Long> {
     
-    Optional<Pago> findByReservaId(Long reservaId);
+    Optional<Pago> findByInscripcionId(Long inscripcionId);
     
     List<Pago> findByEstado(String estado);
     
     List<Pago> findByMetodoPago(String metodoPago);
-}
+} 
