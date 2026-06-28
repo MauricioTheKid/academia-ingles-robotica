@@ -1,8 +1,10 @@
 package com.academia.inglesrobotica.controller;
 
+import com.academia.inglesrobotica.model.Calificacion;
 import com.academia.inglesrobotica.model.Inscripcion;
 import com.academia.inglesrobotica.model.Pago;
 import com.academia.inglesrobotica.model.Reserva;
+import com.academia.inglesrobotica.service.CalificacionService;
 import com.academia.inglesrobotica.service.CursoService;
 import com.academia.inglesrobotica.service.InscripcionService;
 import com.academia.inglesrobotica.service.PagoService;
@@ -12,10 +14,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Controller
 public class HomeController {
@@ -31,6 +38,9 @@ public class HomeController {
     
     @Autowired
     private PagoService pagoService;
+    
+    @Autowired
+    private CalificacionService calificacionService;
 
     @GetMapping("/")
     public String index() {
@@ -161,5 +171,79 @@ public class HomeController {
         model.addAttribute("pago", pago);
         
         return "profesor/ver-alumno";
+    }
+
+    // ==================== CALIFICACIONES PROFESOR ====================
+
+    @GetMapping("/profesor/calificaciones")
+    public String calificacionesProfesor(Model model, HttpSession session) {
+        Long usuarioId = (Long) session.getAttribute("usuarioId");
+        if (usuarioId == null) {
+            return "redirect:/auth/login";
+        }
+        
+        // Obtener todas las inscripciones activas
+        List<Inscripcion> inscripcionesActivas = inscripcionService.findByEstado("ACTIVA");
+        
+        // Para cada inscripción, cargar su calificación si existe
+        Map<Long, Calificacion> mapaCalificaciones = new HashMap<>();
+        for (Inscripcion ins : inscripcionesActivas) {
+            calificacionService.findByInscripcionId(ins.getId())
+                    .ifPresent(cal -> mapaCalificaciones.put(ins.getId(), cal));
+        }
+        
+        model.addAttribute("inscripcionesActivas", inscripcionesActivas);
+        model.addAttribute("mapaCalificaciones", mapaCalificaciones);
+        model.addAttribute("cursos", cursoService.findActivos());
+        
+        return "profesor/calificaciones";
+    }
+
+    @GetMapping("/profesor/calificar/{inscripcionId}")
+    public String formularioCalificar(@PathVariable Long inscripcionId, 
+                                       Model model, HttpSession session) {
+        Long usuarioId = (Long) session.getAttribute("usuarioId");
+        if (usuarioId == null) {
+            return "redirect:/auth/login";
+        }
+        
+        Inscripcion inscripcion = inscripcionService.findById(inscripcionId)
+                .orElseThrow(() -> new RuntimeException("Inscripción no encontrada"));
+        
+        Calificacion calificacion = calificacionService.findByInscripcionId(inscripcionId)
+                .orElse(new Calificacion());
+        
+        model.addAttribute("inscripcion", inscripcion);
+        model.addAttribute("calificacion", calificacion);
+        
+        return "profesor/calificar";
+    }
+
+    @PostMapping("/profesor/calificar/{inscripcionId}")
+    public String guardarCalificacion(@PathVariable Long inscripcionId,
+                                       @ModelAttribute Calificacion calificacion,
+                                       RedirectAttributes redirectAttributes) {
+        try {
+            calificacionService.guardarOActualizar(inscripcionId, calificacion);
+            redirectAttributes.addFlashAttribute("success", "✅ Calificación guardada exitosamente.");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "❌ Error: " + e.getMessage());
+        }
+        return "redirect:/profesor/calificaciones";
+    }
+
+    // ==================== CALIFICACIONES ALUMNO ====================
+
+    @GetMapping("/alumno/calificaciones")
+    public String misCalificaciones(Model model, HttpSession session) {
+        Long usuarioId = (Long) session.getAttribute("usuarioId");
+        if (usuarioId == null) {
+            return "redirect:/auth/login";
+        }
+        
+        List<Calificacion> calificaciones = calificacionService.findByUsuarioId(usuarioId);
+        model.addAttribute("calificaciones", calificaciones);
+        
+        return "alumno/calificaciones";
     }
 } 

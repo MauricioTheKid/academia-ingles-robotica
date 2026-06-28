@@ -1,6 +1,8 @@
 package com.academia.inglesrobotica.controller;
 
+import com.academia.inglesrobotica.model.Calificacion;
 import com.academia.inglesrobotica.model.Reserva;
+import com.academia.inglesrobotica.service.CalificacionService;
 import com.academia.inglesrobotica.service.CursoService;
 import com.academia.inglesrobotica.service.ReservaService;
 import com.academia.inglesrobotica.service.UsuarioService;
@@ -26,6 +28,9 @@ public class AdminController {
 
     @Autowired
     private ReservaService reservaService;
+    
+    @Autowired
+    private CalificacionService calificacionService;
 
     @GetMapping("/dashboard")
     public String dashboard(Model model, HttpSession session) {
@@ -107,5 +112,22 @@ public class AdminController {
         model.addAttribute("cursosPopulares", cursoService.findAll());
 
         return "admin/reportes";
+    }
+
+    // ==================== CALIFICACIONES ====================
+
+    @GetMapping("/calificaciones")
+    public String calificacionesAdmin(Model model, HttpSession session) {
+        String email = (String) session.getAttribute("usuarioEmail");
+        if (email == null || !email.equals("admin@test.com")) {
+            return "redirect:/auth/login";
+        }
+
+        List<Calificacion> todas = calificacionService.findAll();
+        model.addAttribute("calificaciones", todas);
+        model.addAttribute("totalAprobados", calificacionService.countAprobados());
+        model.addAttribute("totalReprobados", calificacionService.countReprobados());
+
+        return "admin/calificaciones";
     }
 } 

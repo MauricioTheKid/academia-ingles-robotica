@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calificaciones - Admin</title>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box;}
+        body{font-family:'Segoe UI',sans-serif;background:#f7fafc;display:flex;}
+        .sidebar{width:250px;background:#1a202c;min-height:100vh;padding:20px;color:white;}
+        .sidebar h2{font-size:1.2rem;margin-bottom:25px;}
+        .sidebar a{display:block;color:#e2e8f0;text-decoration:none;padding:10px;margin:5px 0;border-radius:6px;}
+        .sidebar a:hover{background:#2d3748;}
+        .sidebar a.active{background:#2d3748;font-weight:bold;}
+        .main{flex:1;padding:30px;}
+        .cards{display:flex;gap:20px;flex-wrap:wrap;margin-bottom:25px;}
+        .card{background:white;padding:20px;border-radius:10px;box-shadow:0 2px 10px rgba(0,0,0,0.1);flex:1;min-width:200px;text-align:center;}
+        .section{background:white;padding:20px;border-radius:10px;}
+        table{width:100%;border-collapse:collapse;}
+        th,td{padding:12px;text-align:left;border-bottom:1px solid #e2e8f0;}
+        th{background:#edf2f7;}
+        .badge{padding:4px 10px;border-radius:20px;font-size:0.8rem;}
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <h2>⚙️ Admin Panel</h2>
+        <a href="/admin/dashboard">📊 Dashboard</a>
+        <a href="/admin/usuarios">👥 Usuarios</a>
+        <a href="/cursos">📚 Cursos</a>
+        <a href="/horarios">🕐 Horarios</a>
+        <a href="/admin/inscripciones">📋 Inscripciones</a>
+        <a href="/admin/calificaciones" class="active">⭐ Calificaciones</a>
+        <a href="/admin/reportes">📈 Reportes</a>
+        <a href="/auth/logout">🚪 Salir</a>
+    </div>
+    <div class="main">
+        <h1>⭐ Calificaciones de Alumnos</h1>
+        
+        <div class="cards">
+            <div class="card"><h3 th:text="${#lists.size(calificaciones)}">0</h3><p>Total Calificaciones</p></div>
+            <div class="card"><h3 th:text="${totalAprobados}">0</h3><p>Aprobados</p></div>
+            <div class="card"><h3 th:text="${totalReprobados}">0</h3><p>Reprobados</p></div>
+        </div>
+
+        <div class="section">
+            <table>
+                <thead><tr><th>Alumno</th><th>Curso</th><th>P1</th><th>P2</th><th>P3</th><th>P4</th><th>Proy</th><th>E.F</th><th>Prom</th><th>Estado</th></tr></thead>
+                <tbody>
+                    <tr th:each="cal : ${calificaciones}">
+                        <td th:text="${cal.inscripcion.usuario.nombre} + ' ' + ${cal.inscripcion.usuario.apellido}"></td>
+                        <td th:text="${cal.inscripcion.curso.nombre}"></td>
+                        <td th:text="${cal.notaParcial1}">-</td>
+                        <td th:text="${cal.notaParcial2}">-</td>
+                        <td th:text="${cal.notaParcial3}">-</td>
+                        <td th:text="${cal.notaParcial4}">-</td>
+                        <td th:text="${cal.notaProyecto}">-</td>
+                        <td th:text="${cal.notaExamenFinal}">-</td>
+                        <td><strong th:text="${cal.promedio}"></strong></td>
+                        <td><span class="badge" th:classappend="'bg-' + ${cal.colorEstado}" th:text="${cal.estado}"></span></td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(calificaciones)}"><td colspan="10" style="text-align:center;">No hay calificaciones registradas.</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calificaciones - Profesor</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f7fafc; display: flex; }
+        .sidebar { width: 250px; background: linear-gradient(180deg, #1a3a5c 0%, #2c5282 100%); min-height: 100vh; padding: 20px; color: white; position: fixed; left: 0; top: 0; bottom: 0; }
+        .sidebar h2 { font-size: 1.3rem; margin-bottom: 25px; padding-bottom: 15px; border-bottom: 2px solid rgba(255,255,255,0.2); }
+        .sidebar a { display: block; color: #e2e8f0; text-decoration: none; padding: 12px 15px; margin: 5px 0; border-radius: 8px; transition: all 0.3s; }
+        .sidebar a:hover { background: rgba(255,255,255,0.15); color: white; transform: translateX(5px); }
+        .sidebar a.active { background: rgba(255,255,255,0.25); font-weight: bold; }
+        .main { flex: 1; padding: 30px; margin-left: 250px; }
+        
+        .card-custom { background: white; border-radius: 15px; padding: 25px; margin-bottom: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
+        
+        .progress { height: 10px; border-radius: 5px; }
+        .badge-nota { font-size: 1rem; padding: 5px 10px; }
+        
+        .btn-calificar { 
+            background: linear-gradient(45deg, #667eea, #764ba2); 
+            color: white; 
+            border: none; 
+            border-radius: 20px; 
+            padding: 8px 20px;
+            transition: all 0.3s;
+        }
+        .btn-calificar:hover { transform: scale(1.05); color: white; }
+        
+        .sin-notas { opacity: 0.5; }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <h2><i class="fas fa-chalkboard-teacher me-2"></i>Profesor</h2>
+        <a href="/"><i class="fas fa-home me-2"></i>Inicio</a>
+        <a href="/profesor/dashboard"><i class="fas fa-tachometer-alt me-2"></i>Dashboard</a>
+        <a href="/profesor/alumnos"><i class="fas fa-users me-2"></i>Mis Alumnos</a>
+        <a href="/profesor/calificaciones" class="active"><i class="fas fa-star me-2"></i>Calificaciones</a>
+        <a href="/cursos"><i class="fas fa-book me-2"></i>Cursos</a>
+        <a href="/auth/logout"><i class="fas fa-sign-out-alt me-2"></i>Salir</a>
+    </div>
+
+    <div class="main">
+        <div th:if="${success}" class="alert alert-success alert-dismissible fade show">
+            <span th:text="${success}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
+        <h2 class="mb-4" style="color: #1a3a5c;">
+            <i class="fas fa-star me-2"></i>Calificaciones de Alumnos
+        </h2>
+
+        <!-- Tabla de alumnos activos con calificaciones -->
+        <div class="card-custom">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Alumno</th>
+                            <th>Curso</th>
+                            <th>P1</th>
+                            <th>P2</th>
+                            <th>P3</th>
+                            <th>P4</th>
+                            <th>Proy</th>
+                            <th>Ex.Fin</th>
+                            <th>Promedio</th>
+                            <th>Estado</th>
+                            <th>Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="inscripcion : ${inscripcionesActivas}">
+                            <td>
+                                <strong th:text="${inscripcion.usuario.nombre} + ' ' + ${inscripcion.usuario.apellido}"></strong>
+                            </td>
+                            <td><span class="badge bg-primary" th:text="${inscripcion.curso.nombre}"></span></td>
+                            
+                            <th:block th:if="${mapaCalificaciones.containsKey(inscripcion.id)}">
+                                <td th:text="${mapaCalificaciones[inscripcion.id].notaParcial1}">-</td>
+                                <td th:text="${mapaCalificaciones[inscripcion.id].notaParcial2}">-</td>
+                                <td th:text="${mapaCalificaciones[inscripcion.id].notaParcial3}">-</td>
+                                <td th:text="${mapaCalificaciones[inscripcion.id].notaParcial4}">-</td>
+                                <td th:text="${mapaCalificaciones[inscripcion.id].notaProyecto}">-</td>
+                                <td th:text="${mapaCalificaciones[inscripcion.id].notaExamenFinal}">-</td>
+                                <td>
+                                    <span class="badge badge-nota" 
+                                          th:classappend="'bg-' + ${mapaCalificaciones[inscripcion.id].colorEstado}"
+                                          th:text="${mapaCalificaciones[inscripcion.id].promedio}"></span>
+                                </td>
+                                <td>
+                                    <span class="badge" 
+                                          th:classappend="'bg-' + ${mapaCalificaciones[inscripcion.id].colorEstado}"
+                                          th:text="${mapaCalificaciones[inscripcion.id].estado}"></span>
+                                </td>
+                            </th:block>
+                            
+                            <th:block th:unless="${mapaCalificaciones.containsKey(inscripcion.id)}">
+                                <td colspan="6" class="text-center text-muted sin-notas">Sin calificaciones</td>
+                                <td><span class="badge bg-secondary">-</span></td>
+                                <td><span class="badge bg-secondary">Sin notas</span></td>
+                            </th:block>
+                            
+                            <td>
+                                <a th:href="@{/profesor/calificar/{id}(id=${inscripcion.id})}" 
+                                   class="btn-calificar">
+                                    <i class="fas fa-edit me-1"></i>Calificar
+                                </a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</body>
+</html> 
