@@ -23,13 +23,27 @@
                         <p class="mb-0 mt-2">Completa tus datos para continuar</p>
                     </div>
                     <div class="card-body p-4">
+                        
+                        <!-- Mostrar errores si los hay -->
+                        <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            <span th:text="${error}"></span>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+
+                        <!-- Información de la reserva -->
                         <div th:if="${reserva}" class="alert alert-info">
                             <strong><i class="fas fa-book me-2"></i>Curso:</strong> <span th:text="${reserva.horario.curso.nombre}"></span><br>
                             <strong><i class="far fa-calendar-alt me-2"></i>Horario:</strong> <span th:text="${reserva.horario.diaSemana} + ' ' + ${reserva.horario.horaInicio} + ' - ' + ${reserva.horario.horaFin}"></span>
                         </div>
 
-                        <form action="/inscripcion/guardar" method="post" th:object="${inscripcionRequest}">
-                            <input type="hidden" name="reservaId" th:value="${reservaId}">
+                        <!-- FORMULARIO CORREGIDO -->
+                        <form th:action="@{/inscripcion/guardar}" 
+                              th:object="${inscripcionRequest}" 
+                              method="post">
+                            
+                            <!-- CAMPO OCULTO CORREGIDO: Usar value explícito -->
+                            <input type="hidden" name="reservaId" th:value="${reservaId}" />
 
                             <div class="row">
                                 <div class="col-md-6 mb-3">
@@ -40,16 +54,16 @@
                                     <label class="form-label fw-bold"><i class="fas fa-graduation-cap"></i> Grado Escolar *</label>
                                     <select class="form-select" name="gradoEscolar" required>
                                         <option value="">Selecciona...</option>
-                                        <option>1° Básico</option>
-                                        <option>2° Básico</option>
-                                        <option>3° Básico</option>
-                                        <option>4° Básico</option>
-                                        <option>5° Básico</option>
-                                        <option>6° Básico</option>
-                                        <option>1° Medio</option>
-                                        <option>2° Medio</option>
-                                        <option>3° Medio</option>
-                                        <option>4° Medio</option>
+                                        <option value="1° Básico">1° Básico</option>
+                                        <option value="2° Básico">2° Básico</option>
+                                        <option value="3° Básico">3° Básico</option>
+                                        <option value="4° Básico">4° Básico</option>
+                                        <option value="5° Básico">5° Básico</option>
+                                        <option value="6° Básico">6° Básico</option>
+                                        <option value="1° Medio">1° Medio</option>
+                                        <option value="2° Medio">2° Medio</option>
+                                        <option value="3° Medio">3° Medio</option>
+                                        <option value="4° Medio">4° Medio</option>
                                     </select>
                                 </div>
                             </div>
@@ -80,11 +94,11 @@
                                     <label class="form-label fw-bold"><i class="fas fa-tshirt"></i> Talla de Uniforme</label>
                                     <select class="form-select" name="tallaUniforme">
                                         <option value="">Selecciona...</option>
-                                        <option>XS</option>
-                                        <option>S</option>
-                                        <option>M</option>
-                                        <option>L</option>
-                                        <option>XL</option>
+                                        <option value="XS">XS</option>
+                                        <option value="S">S</option>
+                                        <option value="M">M</option>
+                                        <option value="L">L</option>
+                                        <option value="XL">XL</option>
                                     </select>
                                 </div>
                                 <div class="col-md-6 mb-3">

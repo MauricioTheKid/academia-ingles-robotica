@@ -29,6 +29,8 @@ public class PagoService {
     public Pago registrarPago(PagoRequest request) {
         System.out.println("=== DEBUG: PagoService.registrarPago ===");
         System.out.println("InscripcionId: " + request.getInscripcionId());
+        System.out.println("Método de pago: " + request.getMetodoPago());
+        System.out.println("Monto: " + request.getMonto());
         
         Inscripcion inscripcion = inscripcionService.findById(request.getInscripcionId())
                 .orElseThrow(() -> new RuntimeException("Inscripción no encontrada con ID: " + request.getInscripcionId()));
@@ -47,6 +49,7 @@ public class PagoService {
         pago.setReferenciaPago(request.getReferenciaPago());
         pago.setMonto(request.getMonto() != null ? request.getMonto() : inscripcion.getCurso().getPrecio());
         pago.setEstado("PENDIENTE");
+        pago.setFechaPago(LocalDateTime.now());
 
         System.out.println("Pago a guardar - Método: " + pago.getMetodoPago() + ", Monto: " + pago.getMonto());
 
@@ -55,15 +58,17 @@ public class PagoService {
             "Esperando verificación de pago por administrador");
 
         Pago saved = pagoRepository.save(pago);
-        System.out.println("Pago guardado con ID: " + saved.getId());
+        System.out.println("✅ Pago guardado con ID: " + saved.getId());
         
         return saved;
     }
 
     @Transactional
     public Pago verificarPago(Long id, boolean aprobado, String observaciones) {
+        System.out.println("=== DEBUG: Verificando pago ID: " + id + " - Aprobado: " + aprobado);
+        
         Pago pago = pagoRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Pago no encontrado"));
+                .orElseThrow(() -> new RuntimeException("Pago no encontrado con ID: " + id));
 
         if (aprobado) {
             pago.setEstado("COMPLETADO");
@@ -71,23 +76,34 @@ public class PagoService {
             // Activar la inscripción
             inscripcionService.actualizarEstado(pago.getInscripcion().getId(), "ACTIVA", observaciones);
             // Enviar email de éxito
-            emailService.enviarPagoVerificado(
-                pago.getInscripcion().getUsuario().getEmail(),
-                true,
-                pago.getInscripcion().getCurso().getNombre()
-            );
+            try {
+                emailService.enviarPagoVerificado(
+                    pago.getInscripcion().getUsuario().getEmail(),
+                    true,
+                    pago.getInscripcion().getCurso().getNombre()
+                );
+            } catch (Exception e) {
+                System.out.println("⚠️ Error al enviar email de verificación: " + e.getMessage());
+            }
         } else {
             pago.setEstado("RECHAZADO");
+            pago.setObservaciones(observaciones);
             inscripcionService.actualizarEstado(pago.getInscripcion().getId(), "RECHAZADA", observaciones);
             // Enviar email de rechazo
-            emailService.enviarPagoVerificado(
-                pago.getInscripcion().getUsuario().getEmail(),
-                false,
-                pago.getInscripcion().getCurso().getNombre()
-            );
+            try {
+                emailService.enviarPagoVerificado(
+                    pago.getInscripcion().getUsuario().getEmail(),
+                    false,
+                    pago.getInscripcion().getCurso().getNombre()
+                );
+            } catch (Exception e) {
+                System.out.println("⚠️ Error al enviar email de rechazo: " + e.getMessage());
+            }
         }
 
-        return pagoRepository.save(pago);
+        Pago saved = pagoRepository.save(pago);
+        System.out.println("✅ Pago actualizado - Estado: " + saved.getEstado());
+        return saved;
     }
 
     public Optional<Pago> findByInscripcionId(Long inscripcionId) {
@@ -97,4 +113,4 @@ public class PagoService {
     public List<Pago> findByEstado(String estado) {
         return pagoRepository.findByEstado(estado);
     }
-} 
+}

@@ -28,23 +28,38 @@ public class InscripcionService {
 
     @Transactional
     public Inscripcion crearInscripcion(InscripcionRequest request, Usuario usuario) {
+        System.out.println("=== DEBUG: Iniciando creación de inscripción en Service ===");
+        System.out.println("ReservaId recibido: " + request.getReservaId());
+        System.out.println("Usuario ID: " + usuario.getId());
+        System.out.println("Usuario Email: " + usuario.getEmail());
+        
+        if (request.getReservaId() == null) {
+            throw new RuntimeException("El ID de reserva no puede ser nulo");
+        }
+        
         Reserva reserva = reservaRepository.findById(request.getReservaId())
-                .orElseThrow(() -> new RuntimeException("Reserva no encontrada"));
+                .orElseThrow(() -> new RuntimeException("Reserva no encontrada con ID: " + request.getReservaId()));
+
+        System.out.println("Reserva encontrada - ID: " + reserva.getId() + ", Estado: " + reserva.getEstado());
+        System.out.println("Reserva pertenece al usuario ID: " + reserva.getUsuario().getId());
 
         // Validar que la reserva pertenezca al usuario
         if (!reserva.getUsuario().getId().equals(usuario.getId())) {
-            throw new RuntimeException("Esta reserva no te pertenece");
+            throw new RuntimeException("Esta reserva no te pertenece. Reserva usuario: " + 
+                reserva.getUsuario().getId() + ", Tu ID: " + usuario.getId());
         }
 
         // Validar que la reserva esté CONFIRMADA
         if (!"CONFIRMADA".equals(reserva.getEstado())) {
-            throw new RuntimeException("La reserva debe estar confirmada para inscribirse");
+            throw new RuntimeException("La reserva debe estar confirmada para inscribirse. Estado actual: " + 
+                reserva.getEstado());
         }
 
         // Validar que no exista una inscripción para esta reserva
         Optional<Inscripcion> existente = inscripcionRepository.findByReservaId(reserva.getId());
         if (existente.isPresent()) {
-            throw new RuntimeException("Ya existe una inscripción para esta reserva");
+            throw new RuntimeException("Ya existe una inscripción para esta reserva (ID: " + 
+                existente.get().getId() + ")");
         }
 
         Inscripcion inscripcion = new Inscripcion();
@@ -60,11 +75,24 @@ public class InscripcionService {
         inscripcion.setAutorizacionFoto(request.getAutorizacionFoto() != null ? request.getAutorizacionFoto() : "NO");
         inscripcion.setTallaUniforme(request.getTallaUniforme());
         inscripcion.setEstado("PENDIENTE_PAGO");
+        inscripcion.setFechaInscripcion(LocalDateTime.now());
 
+        System.out.println("Guardando inscripción en la base de datos...");
+        System.out.println("Datos de inscripción:");
+        System.out.println("- Curso: " + inscripcion.getCurso().getNombre());
+        System.out.println("- Estado: " + inscripcion.getEstado());
+        System.out.println("- Fecha Nacimiento: " + inscripcion.getFechaNacimiento());
+        
         Inscripcion saved = inscripcionRepository.save(inscripcion);
+        System.out.println("✅ Inscripción guardada exitosamente con ID: " + saved.getId());
 
-        // Enviar email de bienvenida al proceso de inscripción
-        emailService.enviarInicioInscripcion(usuario.getEmail(), saved.getId());
+        // Enviar email de bienvenida
+        try {
+            emailService.enviarInicioInscripcion(usuario.getEmail(), saved.getId());
+            System.out.println("Email de inicio de inscripción enviado a: " + usuario.getEmail());
+        } catch (Exception e) {
+            System.out.println("⚠️ Error al enviar email (no crítico): " + e.getMessage());
+        }
 
         return saved;
     }
@@ -94,12 +122,15 @@ public class InscripcionService {
         
         if ("ACTIVA".equals(estado)) {
             inscripcion.setFechaPago(LocalDateTime.now());
-            // Enviar email de inscripción exitosa
-            emailService.enviarInscripcionExitosa(
-                inscripcion.getUsuario().getEmail(),
-                inscripcion.getCurso().getNombre(),
-                inscripcion.getId()
-            );
+            try {
+                emailService.enviarInscripcionExitosa(
+                    inscripcion.getUsuario().getEmail(),
+                    inscripcion.getCurso().getNombre(),
+                    inscripcion.getId()
+                );
+            } catch (Exception e) {
+                System.out.println("⚠️ Error al enviar email de inscripción exitosa: " + e.getMessage());
+            }
         }
         
         return inscripcionRepository.save(inscripcion);

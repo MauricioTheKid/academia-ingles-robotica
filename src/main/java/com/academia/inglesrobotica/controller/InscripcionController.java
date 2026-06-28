@@ -51,8 +51,21 @@ public class InscripcionController {
             return "redirect:/auth/login";
         }
 
+        System.out.println("=== DEBUG: Iniciando inscripción ===");
+        System.out.println("Usuario ID: " + usuarioId);
+        System.out.println("Reserva ID: " + reservaId);
+
         Reserva reserva = reservaService.findById(reservaId).orElse(null);
-        if (reserva == null || !reserva.getUsuario().getId().equals(usuarioId)) {
+        if (reserva == null) {
+            model.addAttribute("error", "Reserva no encontrada.");
+            return "redirect:/reservas/mis-reservas";
+        }
+        
+        System.out.println("Reserva encontrada - Estado: " + reserva.getEstado());
+        System.out.println("Reserva pertenece al usuario: " + reserva.getUsuario().getId());
+
+        if (!reserva.getUsuario().getId().equals(usuarioId)) {
+            model.addAttribute("error", "Esta reserva no te pertenece.");
             return "redirect:/reservas/mis-reservas";
         }
 
@@ -76,14 +89,26 @@ public class InscripcionController {
             return "redirect:/auth/login";
         }
 
+        System.out.println("=== DEBUG: Guardando inscripción ===");
+        System.out.println("Usuario ID: " + usuarioId);
+        System.out.println("ReservaId recibido: " + request.getReservaId());
+        System.out.println("Fecha Nacimiento: " + request.getFechaNacimiento());
+        System.out.println("Grado Escolar: " + request.getGradoEscolar());
+
         Usuario usuario = usuarioService.findById(usuarioId).orElse(null);
-        request.setReservaId(request.getReservaId());
+        if (usuario == null) {
+            redirectAttributes.addFlashAttribute("error", "❌ Usuario no encontrado.");
+            return "redirect:/auth/login";
+        }
 
         try {
             Inscripcion inscripcion = inscripcionService.crearInscripcion(request, usuario);
+            System.out.println("Inscripción creada con ID: " + inscripcion.getId());
             redirectAttributes.addFlashAttribute("success", "✅ Datos guardados. Ahora sube tu acta de nacimiento.");
             return "redirect:/inscripcion/documentos/" + inscripcion.getId();
         } catch (Exception e) {
+            System.out.println("ERROR al crear inscripción: " + e.getMessage());
+            e.printStackTrace();
             redirectAttributes.addFlashAttribute("error", "❌ Error: " + e.getMessage());
             return "redirect:/inscripcion/iniciar/" + request.getReservaId();
         }
@@ -248,7 +273,6 @@ public class InscripcionController {
         return "inscripcion/mis-inscripciones";
     }
 
-    // ==================== NUEVO MÉTODO PARA DETALLE DE INSCRIPCIÓN ====================
     @GetMapping("/detalle/{id}")
     public String detalleInscripcion(@PathVariable Long id, HttpSession session, Model model) {
         Long usuarioId = (Long) session.getAttribute("usuarioId");
@@ -259,7 +283,6 @@ public class InscripcionController {
         Inscripcion inscripcion = inscripcionService.findById(id)
                 .orElseThrow(() -> new RuntimeException("Inscripción no encontrada"));
         
-        // Verificar que la inscripción pertenezca al usuario
         if (!inscripcion.getUsuario().getId().equals(usuarioId)) {
             return "redirect:/inscripcion/mis-inscripciones";
         }
@@ -270,4 +293,4 @@ public class InscripcionController {
         model.addAttribute("pago", pago);
         return "inscripcion/detalle";
     }
-} 
+}

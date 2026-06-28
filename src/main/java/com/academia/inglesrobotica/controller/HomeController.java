@@ -1,13 +1,18 @@
 package com.academia.inglesrobotica.controller;
 
+import com.academia.inglesrobotica.model.Inscripcion;
+import com.academia.inglesrobotica.model.Pago;
 import com.academia.inglesrobotica.model.Reserva;
 import com.academia.inglesrobotica.service.CursoService;
+import com.academia.inglesrobotica.service.InscripcionService;
+import com.academia.inglesrobotica.service.PagoService;
 import com.academia.inglesrobotica.service.ReservaService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,6 +25,12 @@ public class HomeController {
 
     @Autowired
     private CursoService cursoService;
+    
+    @Autowired
+    private InscripcionService inscripcionService;
+    
+    @Autowired
+    private PagoService pagoService;
 
     @GetMapping("/")
     public String index() {
@@ -116,7 +127,39 @@ public class HomeController {
     }
 
     @GetMapping("/profesor/alumnos")
-    public String profesorAlumnos() {
+    public String profesorAlumnos(Model model, HttpSession session) {
+        Long usuarioId = (Long) session.getAttribute("usuarioId");
+        if (usuarioId == null) {
+            return "redirect:/auth/login";
+        }
+        
+        List<Inscripcion> inscripcionesActivas = inscripcionService.findByEstado("ACTIVA");
+        List<Inscripcion> inscripcionesPendientes = inscripcionService.findByEstado("PENDIENTE_PAGO");
+        List<Inscripcion> inscripcionesVerificacion = inscripcionService.findByEstado("PAGO_VERIFICACION");
+        
+        model.addAttribute("inscripcionesActivas", inscripcionesActivas);
+        model.addAttribute("inscripcionesPendientes", inscripcionesPendientes);
+        model.addAttribute("inscripcionesVerificacion", inscripcionesVerificacion);
+        model.addAttribute("totalAlumnos", inscripcionesActivas.size());
+        
         return "profesor/alumnos";
+    }
+    
+    @GetMapping("/profesor/alumno/{id}")
+    public String verAlumno(@PathVariable Long id, HttpSession session, Model model) {
+        Long usuarioId = (Long) session.getAttribute("usuarioId");
+        if (usuarioId == null) {
+            return "redirect:/auth/login";
+        }
+        
+        Inscripcion inscripcion = inscripcionService.findById(id)
+                .orElseThrow(() -> new RuntimeException("Inscripción no encontrada"));
+        
+        Pago pago = pagoService.findByInscripcionId(id).orElse(null);
+        
+        model.addAttribute("inscripcion", inscripcion);
+        model.addAttribute("pago", pago);
+        
+        return "profesor/ver-alumno";
     }
 } 
