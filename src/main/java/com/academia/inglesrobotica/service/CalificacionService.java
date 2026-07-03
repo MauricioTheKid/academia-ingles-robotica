@@ -1,16 +1,16 @@
 package com.academia.inglesrobotica.service;
 
-import com.academia.inglesrobotica.model.Calificacion;
-import com.academia.inglesrobotica.model.Inscripcion;
-import com.academia.inglesrobotica.repository.CalificacionRepository;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
+import com.academia.inglesrobotica.model.Calificacion;
+import com.academia.inglesrobotica.model.Inscripcion;
+import com.academia.inglesrobotica.repository.CalificacionRepository;
 
 @Service
 public class CalificacionService {
@@ -47,18 +47,32 @@ public class CalificacionService {
 
     @Transactional
     public Calificacion guardarOActualizar(Long inscripcionId, Calificacion calificacion) {
+        System.out.println("=== DEBUG: guardarOActualizar ===");
+        System.out.println("InscripcionId: " + inscripcionId);
+        System.out.println("Nota Parcial 1: " + calificacion.getNotaParcial1());
+        System.out.println("Nota Parcial 2: " + calificacion.getNotaParcial2());
+        System.out.println("Nota Parcial 3: " + calificacion.getNotaParcial3());
+        System.out.println("Nota Parcial 4: " + calificacion.getNotaParcial4());
+        System.out.println("Nota Proyecto: " + calificacion.getNotaProyecto());
+        System.out.println("Nota Examen Final: " + calificacion.getNotaExamenFinal());
+        System.out.println("Observaciones: " + calificacion.getObservaciones());
+
         Inscripcion inscripcion = inscripcionService.findById(inscripcionId)
-                .orElseThrow(() -> new RuntimeException("Inscripción no encontrada"));
+                .orElseThrow(() -> new RuntimeException("Inscripción no encontrada con ID: " + inscripcionId));
+
+        System.out.println("Inscripción encontrada: " + inscripcion.getId());
 
         // Buscar si ya existe una calificación para esta inscripción
         Optional<Calificacion> existente = calificacionRepository.findByInscripcionId(inscripcionId);
-        
+
         Calificacion calif;
         if (existente.isPresent()) {
             calif = existente.get();
+            System.out.println("Actualizando calificación existente ID: " + calif.getId());
         } else {
             calif = new Calificacion();
             calif.setInscripcion(inscripcion);
+            System.out.println("Creando nueva calificación");
         }
 
         // Actualizar notas
@@ -71,7 +85,12 @@ public class CalificacionService {
         calif.setObservaciones(calificacion.getObservaciones());
         calif.setFechaActualizacion(LocalDateTime.now());
 
-        return calificacionRepository.save(calif);
+        Calificacion saved = calificacionRepository.save(calif);
+        System.out.println("✅ Calificación guardada con ID: " + saved.getId());
+        System.out.println("Promedio calculado: " + saved.getPromedio());
+        System.out.println("Estado: " + saved.getEstado());
+
+        return saved;
     }
 
     @Transactional
@@ -79,7 +98,6 @@ public class CalificacionService {
         calificacionRepository.deleteById(id);
     }
 
-    // Obtener estadísticas generales
     public long countAprobados() {
         return calificacionRepository.findAll().stream()
                 .filter(c -> "Aprobado".equals(c.getEstado()))
@@ -91,4 +109,4 @@ public class CalificacionService {
                 .filter(c -> "Reprobado".equals(c.getEstado()))
                 .count();
     }
-} 
+}

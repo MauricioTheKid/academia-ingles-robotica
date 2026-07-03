@@ -39,8 +39,6 @@ public class EmailService {
         mailSender.send(message);
     }
 
-    // ==================== MÉTODOS PARA INSCRIPCIONES ====================
-
     public void enviarInicioInscripcion(String to, Long inscripcionId) {
         SimpleMailMessage message = new SimpleMailMessage();
         message.setTo(to);
@@ -88,4 +86,20 @@ public class EmailService {
         }
         mailSender.send(message);
     }
-} 
+
+    // ===== NUEVO MÉTODO =====
+    public void enviarCredencialesPadre(String to, String passwordTemporal) {
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setTo(to);
+        message.setSubject("👨‍👩‍👧‍👦 Credenciales - Academia San Luis");
+        message.setText("¡Bienvenido a Academia San Luis!\n\n" +
+                "Se ha creado tu cuenta de Padre de Familia porque tu hijo(a) te ha registrado.\n\n" +
+                "📧 Email: " + to + "\n" +
+                "🔑 Contraseña temporal: " + passwordTemporal + "\n\n" +
+                "Inicia sesión en: http://localhost:8080/auth/login\n\n" +
+                "⚠️ Te recomendamos cambiar tu contraseña al iniciar sesión.\n\n" +
+                "Desde tu panel podrás monitorear el progreso académico de tus hijos.\n\n" +
+                "Saludos,\nAcademia San Luis");
+        mailSender.send(message);
+    }
+}

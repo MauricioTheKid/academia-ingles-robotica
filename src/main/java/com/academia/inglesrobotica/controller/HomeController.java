@@ -1,28 +1,35 @@
 package com.academia.inglesrobotica.controller;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
 import com.academia.inglesrobotica.model.Calificacion;
 import com.academia.inglesrobotica.model.Inscripcion;
 import com.academia.inglesrobotica.model.Pago;
 import com.academia.inglesrobotica.model.Reserva;
+import com.academia.inglesrobotica.model.Usuario;
 import com.academia.inglesrobotica.service.CalificacionService;
 import com.academia.inglesrobotica.service.CursoService;
 import com.academia.inglesrobotica.service.InscripcionService;
 import com.academia.inglesrobotica.service.PagoService;
 import com.academia.inglesrobotica.service.ReservaService;
-import jakarta.servlet.http.HttpSession;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import com.academia.inglesrobotica.service.UsuarioService;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import jakarta.servlet.http.HttpSession;
 
 @Controller
 public class HomeController {
@@ -32,15 +39,18 @@ public class HomeController {
 
     @Autowired
     private CursoService cursoService;
-    
+
     @Autowired
     private InscripcionService inscripcionService;
-    
+
     @Autowired
     private PagoService pagoService;
-    
+
     @Autowired
     private CalificacionService calificacionService;
+
+    @Autowired
+    private UsuarioService usuarioService;
 
     @GetMapping("/")
     public String index() {
@@ -57,6 +67,8 @@ public class HomeController {
         return "publico/contacto";
     }
 
+    // ==================== ALUMNO ====================
+
     @GetMapping("/alumno/dashboard")
     public String alumnoDashboard(Model model, HttpSession session) {
         model.addAttribute("totalCursos", cursoService.findActivos().size());
@@ -70,8 +82,10 @@ public class HomeController {
         long pendientes = 0;
         long confirmadas = 0;
         for (Reserva r : reservas) {
-            if ("PENDIENTE".equals(r.getEstado())) pendientes++;
-            if ("CONFIRMADA".equals(r.getEstado())) confirmadas++;
+            if ("PENDIENTE".equals(r.getEstado()))
+                pendientes++;
+            if ("CONFIRMADA".equals(r.getEstado()))
+                confirmadas++;
         }
 
         model.addAttribute("totalReservas", reservas.size());
@@ -83,31 +97,90 @@ public class HomeController {
         return "alumno/dashboard";
     }
 
+    @GetMapping("/alumno/calificaciones")
+    public String misCalificaciones(Model model, HttpSession session) {
+        Long usuarioId = (Long) session.getAttribute("usuarioId");
+        if (usuarioId == null) {
+            return "redirect:/auth/login";
+        }
+
+        List<Calificacion> calificaciones = calificacionService.findByUsuarioId(usuarioId);
+        model.addAttribute("calificaciones", calificaciones);
+
+        return "alumno/calificaciones";
+    }
+
+    // ==================== PADRE ====================
+
     @GetMapping("/padre/dashboard")
     public String padreDashboard(Model model, HttpSession session) {
-        model.addAttribute("totalCursos", cursoService.findActivos().size());
-
         Long usuarioId = (Long) session.getAttribute("usuarioId");
-        List<Reserva> reservas = new ArrayList<>();
-        if (usuarioId != null) {
-            reservas = reservaService.findByUsuarioId(usuarioId);
+        if (usuarioId == null) {
+            return "redirect:/auth/login";
         }
 
-        long pendientes = 0;
-        long confirmadas = 0;
-        for (Reserva r : reservas) {
-            if ("PENDIENTE".equals(r.getEstado())) pendientes++;
-            if ("CONFIRMADA".equals(r.getEstado())) confirmadas++;
+        Usuario padre = usuarioService.findById(usuarioId).orElse(null);
+        if (padre == null) {
+            return "redirect:/auth/login";
         }
 
-        model.addAttribute("totalReservas", reservas.size());
-        model.addAttribute("pendientes", pendientes);
-        model.addAttribute("confirmadas", confirmadas);
-        model.addAttribute("pendientesAttr", pendientes);
-        model.addAttribute("confirmadasAttr", confirmadas);
-        model.addAttribute("reservas", reservas);
+        List<Usuario> hijos = usuarioService.findHijosByParentId(usuarioId);
+
+        List<Inscripcion> todasInscripciones = new ArrayList<>();
+        for (Usuario hijo : hijos) {
+            List<Inscripcion> ins = inscripcionService.findByUsuarioId(hijo.getId());
+            todasInscripciones.addAll(ins);
+        }
+
+        long activas = todasInscripciones.stream().filter(i -> "ACTIVA".equals(i.getEstado())).count();
+        long pendientes = todasInscripciones.stream().filter(i -> "PENDIENTE_PAGO".equals(i.getEstado())).count();
+        long verificacion = todasInscripciones.stream().filter(i -> "PAGO_VERIFICACION".equals(i.getEstado())).count();
+
+        Map<Long, Calificacion> calificacionesHijos = new HashMap<>();
+        for (Inscripcion ins : todasInscripciones) {
+            calificacionService.findByInscripcionId(ins.getId())
+                    .ifPresent(cal -> calificacionesHijos.put(ins.getId(), cal));
+        }
+
+        long pagosCompletados = 0;
+        BigDecimal totalInvertido = BigDecimal.ZERO;
+        for (Inscripcion ins : todasInscripciones) {
+            Optional<Pago> pagoOpt = pagoService.findByInscripcionId(ins.getId());
+            if (pagoOpt.isPresent() && "COMPLETADO".equals(pagoOpt.get().getEstado())) {
+                pagosCompletados++;
+                if (pagoOpt.get().getMonto() != null) {
+                    totalInvertido = totalInvertido.add(pagoOpt.get().getMonto());
+                }
+            }
+        }
+
+        BigDecimal promedioGeneral = BigDecimal.ZERO;
+        int countPromedios = 0;
+        for (Calificacion cal : calificacionesHijos.values()) {
+            if (cal.getPromedio().compareTo(BigDecimal.ZERO) > 0) {
+                promedioGeneral = promedioGeneral.add(cal.getPromedio());
+                countPromedios++;
+            }
+        }
+        if (countPromedios > 0) {
+            promedioGeneral = promedioGeneral.divide(BigDecimal.valueOf(countPromedios), 1, RoundingMode.HALF_UP);
+        }
+
+        model.addAttribute("hijos", hijos);
+        model.addAttribute("inscripciones", todasInscripciones);
+        model.addAttribute("inscripcionesActivas", activas);
+        model.addAttribute("inscripcionesPendientes", pendientes);
+        model.addAttribute("inscripcionesVerificacion", verificacion);
+        model.addAttribute("calificacionesHijos", calificacionesHijos);
+        model.addAttribute("pagosCompletados", pagosCompletados);
+        model.addAttribute("totalInvertido", totalInvertido);
+        model.addAttribute("promedioGeneral", promedioGeneral);
+        model.addAttribute("totalHijos", hijos.size());
+
         return "padre/dashboard";
     }
+
+    // ==================== PROFESOR ====================
 
     @GetMapping("/profesor/dashboard")
     public String profesorDashboard(Model model, HttpSession session) {
@@ -122,8 +195,10 @@ public class HomeController {
         long pendientes = 0;
         long confirmadas = 0;
         for (Reserva r : reservas) {
-            if ("PENDIENTE".equals(r.getEstado())) pendientes++;
-            if ("CONFIRMADA".equals(r.getEstado())) confirmadas++;
+            if ("PENDIENTE".equals(r.getEstado()))
+                pendientes++;
+            if ("CONFIRMADA".equals(r.getEstado()))
+                confirmadas++;
         }
 
         model.addAttribute("totalReservas", reservas.size());
@@ -142,34 +217,34 @@ public class HomeController {
         if (usuarioId == null) {
             return "redirect:/auth/login";
         }
-        
+
         List<Inscripcion> inscripcionesActivas = inscripcionService.findByEstado("ACTIVA");
         List<Inscripcion> inscripcionesPendientes = inscripcionService.findByEstado("PENDIENTE_PAGO");
         List<Inscripcion> inscripcionesVerificacion = inscripcionService.findByEstado("PAGO_VERIFICACION");
-        
+
         model.addAttribute("inscripcionesActivas", inscripcionesActivas);
         model.addAttribute("inscripcionesPendientes", inscripcionesPendientes);
         model.addAttribute("inscripcionesVerificacion", inscripcionesVerificacion);
         model.addAttribute("totalAlumnos", inscripcionesActivas.size());
-        
+
         return "profesor/alumnos";
     }
-    
+
     @GetMapping("/profesor/alumno/{id}")
     public String verAlumno(@PathVariable Long id, HttpSession session, Model model) {
         Long usuarioId = (Long) session.getAttribute("usuarioId");
         if (usuarioId == null) {
             return "redirect:/auth/login";
         }
-        
+
         Inscripcion inscripcion = inscripcionService.findById(id)
                 .orElseThrow(() -> new RuntimeException("Inscripción no encontrada"));
-        
+
         Pago pago = pagoService.findByInscripcionId(id).orElse(null);
-        
+
         model.addAttribute("inscripcion", inscripcion);
         model.addAttribute("pago", pago);
-        
+
         return "profesor/ver-alumno";
     }
 
@@ -181,69 +256,133 @@ public class HomeController {
         if (usuarioId == null) {
             return "redirect:/auth/login";
         }
-        
-        // Obtener todas las inscripciones activas
+
         List<Inscripcion> inscripcionesActivas = inscripcionService.findByEstado("ACTIVA");
-        
-        // Para cada inscripción, cargar su calificación si existe
+
         Map<Long, Calificacion> mapaCalificaciones = new HashMap<>();
         for (Inscripcion ins : inscripcionesActivas) {
             calificacionService.findByInscripcionId(ins.getId())
                     .ifPresent(cal -> mapaCalificaciones.put(ins.getId(), cal));
         }
-        
+
         model.addAttribute("inscripcionesActivas", inscripcionesActivas);
         model.addAttribute("mapaCalificaciones", mapaCalificaciones);
         model.addAttribute("cursos", cursoService.findActivos());
-        
+
         return "profesor/calificaciones";
     }
 
     @GetMapping("/profesor/calificar/{inscripcionId}")
-    public String formularioCalificar(@PathVariable Long inscripcionId, 
-                                       Model model, HttpSession session) {
+    public String formularioCalificar(@PathVariable Long inscripcionId,
+            Model model, HttpSession session) {
         Long usuarioId = (Long) session.getAttribute("usuarioId");
         if (usuarioId == null) {
             return "redirect:/auth/login";
         }
-        
+
         Inscripcion inscripcion = inscripcionService.findById(inscripcionId)
-                .orElseThrow(() -> new RuntimeException("Inscripción no encontrada"));
-        
+                .orElseThrow(() -> new RuntimeException("Inscripción no encontrada con ID: " + inscripcionId));
+
+        // Buscar calificación existente o crear una nueva
         Calificacion calificacion = calificacionService.findByInscripcionId(inscripcionId)
                 .orElse(new Calificacion());
-        
+
+        // Asegurarse de que la calificación tenga la inscripción asociada
+        if (calificacion.getInscripcion() == null) {
+            calificacion.setInscripcion(inscripcion);
+        }
+
         model.addAttribute("inscripcion", inscripcion);
         model.addAttribute("calificacion", calificacion);
-        
+
+        // Agregar debug
+        System.out.println("=== Cargando formulario de calificación ===");
+        System.out.println("Inscripción ID: " + inscripcionId);
+        System.out.println(
+                "Alumno: " + inscripcion.getUsuario().getNombre() + " " + inscripcion.getUsuario().getApellido());
+        System.out.println("Curso: " + inscripcion.getCurso().getNombre());
+
         return "profesor/calificar";
     }
 
     @PostMapping("/profesor/calificar/{inscripcionId}")
     public String guardarCalificacion(@PathVariable Long inscripcionId,
-                                       @ModelAttribute Calificacion calificacion,
-                                       RedirectAttributes redirectAttributes) {
+            @RequestParam(required = false) String notaParcial1,
+            @RequestParam(required = false) String notaParcial2,
+            @RequestParam(required = false) String notaParcial3,
+            @RequestParam(required = false) String notaParcial4,
+            @RequestParam(required = false) String notaProyecto,
+            @RequestParam(required = false) String notaExamenFinal,
+            @RequestParam(required = false) String observaciones,
+            RedirectAttributes redirectAttributes,
+            HttpSession session) {
+
+        System.out.println("=== DEBUG: guardarCalificacion ===");
+        System.out.println("InscripcionId: " + inscripcionId);
+        System.out.println("P1: '" + notaParcial1 + "', P2: '" + notaParcial2 + "', P3: '" + notaParcial3 + "', P4: '"
+                + notaParcial4 + "'");
+        System.out.println("Proy: '" + notaProyecto + "', EF: '" + notaExamenFinal + "'");
+        System.out.println("Observaciones: '" + observaciones + "'");
+
         try {
-            calificacionService.guardarOActualizar(inscripcionId, calificacion);
-            redirectAttributes.addFlashAttribute("success", "✅ Calificación guardada exitosamente.");
+            // Convertir strings a BigDecimal, manejando valores vacíos
+            BigDecimal p1 = convertirANota(notaParcial1);
+            BigDecimal p2 = convertirANota(notaParcial2);
+            BigDecimal p3 = convertirANota(notaParcial3);
+            BigDecimal p4 = convertirANota(notaParcial4);
+            BigDecimal proyecto = convertirANota(notaProyecto);
+            BigDecimal examenFinal = convertirANota(notaExamenFinal);
+
+            Calificacion calificacion = new Calificacion();
+            calificacion.setNotaParcial1(p1);
+            calificacion.setNotaParcial2(p2);
+            calificacion.setNotaParcial3(p3);
+            calificacion.setNotaParcial4(p4);
+            calificacion.setNotaProyecto(proyecto);
+            calificacion.setNotaExamenFinal(examenFinal);
+            calificacion.setObservaciones(observaciones);
+
+            Calificacion saved = calificacionService.guardarOActualizar(inscripcionId, calificacion);
+
+            System.out.println("✅ Calificación guardada exitosamente");
+            System.out.println("ID: " + saved.getId());
+            System.out.println("Promedio: " + saved.getPromedio());
+            System.out.println("Estado: " + saved.getEstado());
+
+            redirectAttributes.addFlashAttribute("success",
+                    "✅ Calificaciones guardadas exitosamente. Promedio: " + saved.getPromedio() + " - Estado: "
+                            + saved.getEstado());
+
+            return "redirect:/profesor/calificaciones";
+
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", "❌ Error: " + e.getMessage());
+            System.out.println("❌ ERROR al guardar calificación: " + e.getMessage());
+            e.printStackTrace();
+            redirectAttributes.addFlashAttribute("error", "❌ Error al guardar: " + e.getMessage());
+            return "redirect:/profesor/calificar/" + inscripcionId;
         }
-        return "redirect:/profesor/calificaciones";
     }
 
-    // ==================== CALIFICACIONES ALUMNO ====================
-
-    @GetMapping("/alumno/calificaciones")
-    public String misCalificaciones(Model model, HttpSession session) {
-        Long usuarioId = (Long) session.getAttribute("usuarioId");
-        if (usuarioId == null) {
-            return "redirect:/auth/login";
+    /**
+     * Método auxiliar para convertir String a BigDecimal de forma segura
+     */
+    private BigDecimal convertirANota(String valor) {
+        if (valor == null || valor.trim().isEmpty()) {
+            return null;
         }
-        
-        List<Calificacion> calificaciones = calificacionService.findByUsuarioId(usuarioId);
-        model.addAttribute("calificaciones", calificaciones);
-        
-        return "alumno/calificaciones";
+        try {
+            // Reemplazar coma por punto si es necesario
+            valor = valor.replace(",", ".").trim();
+            BigDecimal nota = new BigDecimal(valor);
+            // Validar rango
+            if (nota.compareTo(BigDecimal.ZERO) < 0 || nota.compareTo(new BigDecimal("10")) > 0) {
+                System.out.println("⚠️ Nota fuera de rango: " + nota + " (debe ser 0-10)");
+                return null;
+            }
+            return nota;
+        } catch (NumberFormatException e) {
+            System.out.println("⚠️ Valor no numérico ignorado: '" + valor + "'");
+            return null;
+        }
     }
-} 
+}

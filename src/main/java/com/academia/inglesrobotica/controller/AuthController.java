@@ -1,5 +1,23 @@
 package com.academia.inglesrobotica.controller;
 
+import java.util.Optional;
+import java.util.UUID;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+
 import com.academia.inglesrobotica.dto.LoginRequest;
 import com.academia.inglesrobotica.dto.LoginResponse;
 import com.academia.inglesrobotica.dto.RegistroRequest;
@@ -9,19 +27,9 @@ import com.academia.inglesrobotica.security.JwtTokenProvider;
 import com.academia.inglesrobotica.service.EmailService;
 import com.academia.inglesrobotica.service.RolService;
 import com.academia.inglesrobotica.service.UsuarioService;
+
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.Optional;
-import java.util.UUID;
 
 @Controller
 @RequestMapping("/auth")
@@ -53,6 +61,7 @@ public class AuthController {
     @GetMapping("/registro")
     public String mostrarRegistro(Model model) {
         model.addAttribute("registroRequest", new RegistroRequest());
+        model.addAttribute("roles", rolService.findAll());
         return "auth/registro";
     }
 
@@ -60,6 +69,7 @@ public class AuthController {
     public String registrar(@Valid @ModelAttribute RegistroRequest request, Model model) {
         if (usuarioService.existsByEmail(request.getEmail())) {
             model.addAttribute("error", "El email ya está registrado");
+            model.addAttribute("roles", rolService.findAll());
             return "auth/registro";
         }
 
@@ -75,15 +85,44 @@ public class AuthController {
                 .orElseThrow(() -> new RuntimeException("Rol no encontrado"));
         usuario.setRol(rol);
 
+        // Vincular padre si es alumno
+        if (rol.getNombre().contains("ALUMNO") && request.getEmailPadre() != null
+                && !request.getEmailPadre().trim().isEmpty()) {
+            Optional<Usuario> padreOpt = usuarioService.findByEmail(request.getEmailPadre().trim());
+            if (padreOpt.isPresent() && padreOpt.get().getRol().getNombre().contains("PADRE")) {
+                usuario.setParent(padreOpt.get());
+            } else {
+                Usuario nuevoPadre = new Usuario();
+                nuevoPadre.setNombre("Padre de " + request.getNombre());
+                nuevoPadre.setApellido(request.getApellido());
+                nuevoPadre.setEmail(request.getEmailPadre().trim());
+                nuevoPadre.setPassword(passwordEncoder.encode("padre123"));
+                nuevoPadre.setActivo(true);
+
+                Rol rolPadre = rolService.findByNombre("PADRE")
+                        .orElseThrow(() -> new RuntimeException("Rol PADRE no encontrado"));
+                nuevoPadre.setRol(rolPadre);
+
+                nuevoPadre = usuarioService.save(nuevoPadre);
+                usuario.setParent(nuevoPadre);
+
+                try {
+                    emailService.enviarCredencialesPadre(nuevoPadre.getEmail(), "padre123");
+                } catch (Exception e) {
+                    System.out.println("No se pudo enviar email al padre: " + e.getMessage());
+                }
+            }
+        }
+
         usuarioService.save(usuario);
         return "redirect:/auth/login?registro=exitoso";
     }
 
     @PostMapping("/login")
     public String procesarLogin(@RequestParam String email,
-                                 @RequestParam String password,
-                                 Model model,
-                                 HttpSession session) {
+            @RequestParam String password,
+            Model model,
+            HttpSession session) {
         Usuario usuario = usuarioService.findByEmail(email).orElse(null);
 
         if (usuario != null && passwordEncoder.matches(password, usuario.getPassword())) {
@@ -91,9 +130,12 @@ public class AuthController {
             session.setAttribute("usuarioId", usuario.getId());
 
             String rol = usuario.getRol().getNombre();
-            if (rol.contains("ADMIN")) return "redirect:/admin/dashboard";
-            if (rol.contains("PROFESOR")) return "redirect:/profesor/dashboard";
-            if (rol.contains("PADRE")) return "redirect:/padre/dashboard";
+            if (rol.contains("ADMIN"))
+                return "redirect:/admin/dashboard";
+            if (rol.contains("PROFESOR"))
+                return "redirect:/profesor/dashboard";
+            if (rol.contains("PADRE"))
+                return "redirect:/padre/dashboard";
             return "redirect:/alumno/dashboard";
         }
 
@@ -135,9 +177,9 @@ public class AuthController {
 
     @PostMapping("/restablecer")
     public String procesarRestablecer(@RequestParam String token,
-                                       @RequestParam String password,
-                                       @RequestParam String confirmar,
-                                       Model model) {
+            @RequestParam String password,
+            @RequestParam String confirmar,
+            Model model) {
         if (!password.equals(confirmar)) {
             model.addAttribute("error", "❌ Las contraseñas no coinciden.");
             model.addAttribute("token", token);
@@ -175,8 +217,7 @@ public class AuthController {
                 usuario.getEmail(),
                 usuario.getNombre(),
                 usuario.getApellido(),
-                usuario.getRol().getNombre()
-        );
+                usuario.getRol().getNombre());
 
         return ResponseEntity.ok(response);
     }
@@ -186,4 +227,4 @@ public class AuthController {
         session.invalidate();
         return "redirect:/auth/login?logout";
     }
-} 
+}

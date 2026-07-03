@@ -1,156 +1,242 @@
-<!DOCTYPE html>
-<html lang="es" xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Registro - Academia San Luis</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+    />
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #1a3a5c 0%, #2c5282 50%, #3182ce 100%); min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 20px; }
-        .register-container { background: white; border-radius: 16px; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3); width: 100%; max-width: 520px; padding: 40px; }
-        .register-header { text-align: center; margin-bottom: 25px; }
-        .register-header h1 { color: #1a3a5c; font-size: 1.6rem; margin-bottom: 5px; }
-        .register-header p { color: #718096; font-size: 0.9rem; }
-        .form-group { margin-bottom: 16px; }
-        .form-group label { display: block; color: #2d3748; font-weight: 600; margin-bottom: 4px; font-size: 0.85rem; }
-        .form-group input, .form-group select { width: 100%; padding: 11px 14px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 0.95rem; transition: all 0.3s; }
-        .form-group input:focus, .form-group select:focus { outline: none; border-color: #3182ce; box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.2); }
-        .form-group input.error { border-color: #e53e3e; background: #fff5f5; }
-        .form-group input.success { border-color: #38a169; background: #f0fff4; }
-        .form-row { display: flex; gap: 15px; }
-        .form-row .form-group { flex: 1; }
-        .btn-register { width: 100%; padding: 13px; background: linear-gradient(135deg, #2c5282, #3182ce); color: white; border: none; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: transform 0.2s; margin-top: 10px; }
-        .btn-register:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(49, 130, 206, 0.4); }
-        .alert { padding: 12px 15px; border-radius: 8px; margin-bottom: 20px; font-size: 0.85rem; }
-        .alert-danger { background: #fff5f5; color: #c53030; border: 1px solid #feb2b2; }
-        .error-msg { color: #e53e3e; font-size: 0.75rem; margin-top: 4px; display: none; }
-        .login-link { text-align: center; margin-top: 20px; color: #718096; font-size: 0.85rem; }
-        .login-link a { color: #3182ce; text-decoration: none; font-weight: 600; }
-        .password-strength { height: 4px; border-radius: 2px; margin-top: 4px; transition: all 0.3s; background: #e2e8f0; }
+      body {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        font-family: "Segoe UI", sans-serif;
+      }
+      .register-card {
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+        padding: 40px;
+        max-width: 500px;
+        width: 100%;
+        margin: 20px auto;
+      }
+      .register-card h2 {
+        color: #1a3a5c;
+        text-align: center;
+        margin-bottom: 10px;
+      }
+      .register-card .subtitle {
+        text-align: center;
+        color: #718096;
+        margin-bottom: 30px;
+      }
+      .form-control,
+      .form-select {
+        border-radius: 10px;
+        padding: 12px 15px;
+        border: 2px solid #e2e8f0;
+        transition: all 0.3s;
+      }
+      .form-control:focus,
+      .form-select:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+      }
+      .btn-register {
+        background: linear-gradient(45deg, #667eea, #764ba2);
+        border: none;
+        border-radius: 50px;
+        padding: 14px;
+        font-weight: bold;
+        font-size: 1.1rem;
+        width: 100%;
+        color: white;
+        transition: transform 0.2s;
+      }
+      .btn-register:hover {
+        transform: scale(1.02);
+      }
+      .login-link {
+        text-align: center;
+        margin-top: 20px;
+      }
+      .login-link a {
+        color: #667eea;
+        text-decoration: none;
+        font-weight: bold;
+      }
+      .alert {
+        border-radius: 10px;
+      }
     </style>
-</head>
-<body>
-    <div class="register-container">
-        <div class="register-header">
-            <h1>🎓 Crear Cuenta</h1>
-            <p>Academia de Inglés & Robótica - San Luis</p>
-        </div>
+  </head>
+  <body>
+    <div class="container">
+      <div class="register-card">
+        <h2><i class="fas fa-user-plus me-2"></i>Crear Cuenta</h2>
+        <p class="subtitle">Únete a Academia San Luis</p>
 
+        <!-- Mensaje de error -->
         <div th:if="${error}" class="alert alert-danger">
-            <span th:text="${error}">Error</span>
+          <i class="fas fa-exclamation-triangle me-2"></i>
+          <span th:text="${error}"></span>
         </div>
 
-        <form th:action="@{/auth/registro}" th:object="${registroRequest}" method="post" id="registroForm">
-            <div class="form-row">
-                <div class="form-group">
-                    <label for="nombre">Nombre *</label>
-                    <input type="text" id="nombre" th:field="*{nombre}" placeholder="Tu nombre" required minlength="2">
-                    <div class="error-msg" id="nombreError">Mínimo 2 caracteres.</div>
-                </div>
-                <div class="form-group">
-                    <label for="apellido">Apellido *</label>
-                    <input type="text" id="apellido" th:field="*{apellido}" placeholder="Tu apellido" required minlength="2">
-                    <div class="error-msg" id="apellidoError">Mínimo 2 caracteres.</div>
-                </div>
-            </div>
+        <form
+          th:action="@{/auth/registro}"
+          th:object="${registroRequest}"
+          method="post"
+        >
+          <!-- Nombre -->
+          <div class="mb-3">
+            <label class="form-label fw-bold">
+              <i class="fas fa-user me-2"></i>Nombre
+            </label>
+            <input
+              type="text"
+              class="form-control"
+              th:field="*{nombre}"
+              placeholder="Tu nombre"
+              required
+            />
+          </div>
 
-            <div class="form-group">
-                <label for="email">Correo electrónico *</label>
-                <input type="email" id="email" th:field="*{email}" placeholder="ejemplo@correo.com" required>
-                <div class="error-msg" id="emailError">Ingresa un correo válido.</div>
-            </div>
+          <!-- Apellido -->
+          <div class="mb-3">
+            <label class="form-label fw-bold">
+              <i class="fas fa-user me-2"></i>Apellido
+            </label>
+            <input
+              type="text"
+              class="form-control"
+              th:field="*{apellido}"
+              placeholder="Tu apellido"
+              required
+            />
+          </div>
 
-            <div class="form-group">
-                <label for="password">Contraseña *</label>
-                <input type="password" id="password" th:field="*{password}" placeholder="Mínimo 6 caracteres" required minlength="6" onkeyup="checkPasswordStrength()">
-                <div class="password-strength" id="passwordStrength"></div>
-                <div class="error-msg" id="passwordError">Mínimo 6 caracteres.</div>
-            </div>
+          <!-- Email -->
+          <div class="mb-3">
+            <label class="form-label fw-bold">
+              <i class="fas fa-envelope me-2"></i>Email
+            </label>
+            <input
+              type="email"
+              class="form-control"
+              th:field="*{email}"
+              placeholder="correo@ejemplo.com"
+              required
+            />
+          </div>
 
-            <div class="form-group">
-                <label for="confirmPassword">Confirmar Contraseña *</label>
-                <input type="password" id="confirmPassword" placeholder="Repite tu contraseña" required onkeyup="checkPasswordMatch()">
-                <div class="error-msg" id="confirmError">Las contraseñas no coinciden.</div>
-            </div>
+          <!-- Teléfono -->
+          <div class="mb-3">
+            <label class="form-label fw-bold">
+              <i class="fas fa-phone me-2"></i>Teléfono
+            </label>
+            <input
+              type="tel"
+              class="form-control"
+              th:field="*{telefono}"
+              placeholder="Ej: 7890-1234"
+            />
+          </div>
 
-            <div class="form-group">
-                <label for="telefono">Teléfono (opcional)</label>
-                <input type="text" id="telefono" th:field="*{telefono}" placeholder="0000-0000">
-            </div>
+          <!-- Contraseña -->
+          <div class="mb-3">
+            <label class="form-label fw-bold">
+              <i class="fas fa-lock me-2"></i>Contraseña
+            </label>
+            <input
+              type="password"
+              class="form-control"
+              th:field="*{password}"
+              placeholder="Mínimo 6 caracteres"
+              required
+            />
+          </div>
 
-            <div class="form-group">
-                <label for="rolId">Tipo de cuenta *</label>
-                <select id="rolId" th:field="*{rolId}" required>
-                    <option value="">Selecciona un tipo</option>
-                    <option value="3">Alumno</option>
-                    <option value="2">Profesor</option>
-                    <option value="4">Padre de familia</option>
-                </select>
-            </div>
+          <!-- Rol -->
+          <div class="mb-3">
+            <label class="form-label fw-bold">
+              <i class="fas fa-user-tag me-2"></i>Tipo de Usuario
+            </label>
+            <select class="form-select" th:field="*{rolId}" id="rolId" required>
+              <option value="">Selecciona un rol...</option>
+              <option
+                th:each="rol : ${roles}"
+                th:value="${rol.id}"
+                th:text="${rol.nombre}"
+              ></option>
+            </select>
+          </div>
 
-            <button type="submit" class="btn-register" id="submitBtn">📝 Crear Cuenta</button>
+          <!-- Email del Padre (visible solo para ALUMNO) -->
+          <div class="mb-3" id="campoPadre" style="display: none">
+            <label class="form-label fw-bold">
+              <i class="fas fa-user-tie me-2"></i>Email del Padre o Tutor
+              <span class="text-muted">(opcional)</span>
+            </label>
+            <input
+              type="email"
+              class="form-control"
+              name="emailPadre"
+              placeholder="Ej: padre@email.com"
+            />
+            <small class="text-muted">
+              <i class="fas fa-info-circle me-1"></i>
+              Si ya existe un padre registrado con este email, se vinculará
+              automáticamente. Si no existe, se creará una cuenta para él y
+              recibirá sus credenciales por correo.
+            </small>
+          </div>
+
+          <!-- Botón de registro -->
+          <button type="submit" class="btn btn-register mt-3">
+            <i class="fas fa-user-plus me-2"></i>Crear Cuenta
+          </button>
         </form>
 
+        <!-- Link a login -->
         <div class="login-link">
-            ¿Ya tienes cuenta? <a href="/auth/login">Iniciar sesión</a>
+          <p>¿Ya tienes cuenta? <a href="/auth/login">Inicia sesión aquí</a></p>
         </div>
+      </div>
     </div>
 
+    <!-- Script para mostrar/ocultar campo de padre -->
     <script>
-        function checkPasswordMatch() {
-            var pwd = document.getElementById("password").value;
-            var confirm = document.getElementById("confirmPassword").value;
-            var confirmInput = document.getElementById("confirmPassword");
-            var errorMsg = document.getElementById("confirmError");
-            
-            if (confirm.length > 0 && pwd !== confirm) {
-                confirmInput.classList.add("error");
-                confirmInput.classList.remove("success");
-                errorMsg.style.display = "block";
-            } else if (confirm.length > 0 && pwd === confirm) {
-                confirmInput.classList.remove("error");
-                confirmInput.classList.add("success");
-                errorMsg.style.display = "none";
+      document.addEventListener("DOMContentLoaded", function () {
+        var selectRol = document.getElementById("rolId");
+        var campoPadre = document.getElementById("campoPadre");
+
+        function toggleCampoPadre() {
+          if (selectRol && selectRol.options[selectRol.selectedIndex]) {
+            var selectedText = selectRol.options[selectRol.selectedIndex].text;
+            if (selectedText.includes("ALUMNO")) {
+              campoPadre.style.display = "block";
             } else {
-                confirmInput.classList.remove("error", "success");
-                errorMsg.style.display = "none";
+              campoPadre.style.display = "none";
             }
+          }
         }
 
-        function checkPasswordStrength() {
-            var pwd = document.getElementById("password").value;
-            var strength = document.getElementById("passwordStrength");
-            
-            if (pwd.length === 0) {
-                strength.style.width = "0%";
-            } else if (pwd.length < 4) {
-                strength.style.width = "25%";
-                strength.style.background = "#e53e3e";
-            } else if (pwd.length < 6) {
-                strength.style.width = "50%";
-                strength.style.background = "#dd6b20";
-            } else if (pwd.length < 8) {
-                strength.style.width = "75%";
-                strength.style.background = "#d69e2e";
-            } else {
-                strength.style.width = "100%";
-                strength.style.background = "#38a169";
-            }
-            
-            checkPasswordMatch();
+        if (selectRol) {
+          selectRol.addEventListener("change", toggleCampoPadre);
+          toggleCampoPadre(); // Ejecutar al cargar la página
         }
-
-        document.getElementById("registroForm").addEventListener("submit", function(e) {
-            var pwd = document.getElementById("password").value;
-            var confirm = document.getElementById("confirmPassword").value;
-            
-            if (pwd !== confirm) {
-                e.preventDefault();
-                alert("Las contraseñas no coinciden. Por favor, verifica.");
-                document.getElementById("confirmError").style.display = "block";
-                document.getElementById("confirmPassword").classList.add("error");
-            }
-        });
+      });
     </script>
-</body>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+  </body>
 </html>

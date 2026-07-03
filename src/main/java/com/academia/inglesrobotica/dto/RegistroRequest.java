@@ -31,4 +31,8 @@ public class RegistroRequest {
     private String telefono;
 
     private Long rolId;
+
+    // NUEVO: Email del padre (solo si es alumno)
+    @Email(message = "Formato de email inválido")
+    private String emailPadre;
 }
