@@ -58,7 +58,8 @@ public class HomeController {
     }
 
     @GetMapping("/publico/cursos")
-    public String cursosPublicos() {
+    public String cursosPublicos(Model model) {
+        model.addAttribute("cursos", cursoService.findActivos());
         return "publico/cursos";
     }
 
@@ -180,6 +181,40 @@ public class HomeController {
         return "padre/dashboard";
     }
 
+    // ==================== VER DETALLE DE UN HIJO ====================
+
+    @GetMapping("/padre/ver-hijo/{id}")
+    public String verHijo(@PathVariable Long id, HttpSession session, Model model) {
+        Long usuarioId = (Long) session.getAttribute("usuarioId");
+        if (usuarioId == null) {
+            return "redirect:/auth/login";
+        }
+
+        Usuario padre = usuarioService.findById(usuarioId).orElse(null);
+        if (padre == null || !padre.getRol().getNombre().contains("PADRE")) {
+            return "redirect:/auth/login";
+        }
+
+        Usuario hijo = usuarioService.findById(id).orElse(null);
+        if (hijo == null || hijo.getParent() == null || !hijo.getParent().getId().equals(usuarioId)) {
+            return "redirect:/padre/dashboard";
+        }
+
+        List<Inscripcion> inscripciones = inscripcionService.findByUsuarioId(id);
+
+        Map<Long, Calificacion> calificacionesHijos = new HashMap<>();
+        for (Inscripcion ins : inscripciones) {
+            calificacionService.findByInscripcionId(ins.getId())
+                    .ifPresent(cal -> calificacionesHijos.put(ins.getId(), cal));
+        }
+
+        model.addAttribute("hijo", hijo);
+        model.addAttribute("inscripciones", inscripciones);
+        model.addAttribute("calificacionesHijos", calificacionesHijos);
+
+        return "padre/ver-hijo";
+    }
+
     // ==================== PROFESOR ====================
 
     @GetMapping("/profesor/dashboard")
@@ -283,24 +318,15 @@ public class HomeController {
         Inscripcion inscripcion = inscripcionService.findById(inscripcionId)
                 .orElseThrow(() -> new RuntimeException("Inscripción no encontrada con ID: " + inscripcionId));
 
-        // Buscar calificación existente o crear una nueva
         Calificacion calificacion = calificacionService.findByInscripcionId(inscripcionId)
                 .orElse(new Calificacion());
 
-        // Asegurarse de que la calificación tenga la inscripción asociada
         if (calificacion.getInscripcion() == null) {
             calificacion.setInscripcion(inscripcion);
         }
 
         model.addAttribute("inscripcion", inscripcion);
         model.addAttribute("calificacion", calificacion);
-
-        // Agregar debug
-        System.out.println("=== Cargando formulario de calificación ===");
-        System.out.println("Inscripción ID: " + inscripcionId);
-        System.out.println(
-                "Alumno: " + inscripcion.getUsuario().getNombre() + " " + inscripcion.getUsuario().getApellido());
-        System.out.println("Curso: " + inscripcion.getCurso().getNombre());
 
         return "profesor/calificar";
     }
@@ -317,15 +343,7 @@ public class HomeController {
             RedirectAttributes redirectAttributes,
             HttpSession session) {
 
-        System.out.println("=== DEBUG: guardarCalificacion ===");
-        System.out.println("InscripcionId: " + inscripcionId);
-        System.out.println("P1: '" + notaParcial1 + "', P2: '" + notaParcial2 + "', P3: '" + notaParcial3 + "', P4: '"
-                + notaParcial4 + "'");
-        System.out.println("Proy: '" + notaProyecto + "', EF: '" + notaExamenFinal + "'");
-        System.out.println("Observaciones: '" + observaciones + "'");
-
         try {
-            // Convertir strings a BigDecimal, manejando valores vacíos
             BigDecimal p1 = convertirANota(notaParcial1);
             BigDecimal p2 = convertirANota(notaParcial2);
             BigDecimal p3 = convertirANota(notaParcial3);
@@ -344,11 +362,6 @@ public class HomeController {
 
             Calificacion saved = calificacionService.guardarOActualizar(inscripcionId, calificacion);
 
-            System.out.println("✅ Calificación guardada exitosamente");
-            System.out.println("ID: " + saved.getId());
-            System.out.println("Promedio: " + saved.getPromedio());
-            System.out.println("Estado: " + saved.getEstado());
-
             redirectAttributes.addFlashAttribute("success",
                     "✅ Calificaciones guardadas exitosamente. Promedio: " + saved.getPromedio() + " - Estado: "
                             + saved.getEstado());
@@ -356,32 +369,23 @@ public class HomeController {
             return "redirect:/profesor/calificaciones";
 
         } catch (Exception e) {
-            System.out.println("❌ ERROR al guardar calificación: " + e.getMessage());
-            e.printStackTrace();
             redirectAttributes.addFlashAttribute("error", "❌ Error al guardar: " + e.getMessage());
             return "redirect:/profesor/calificar/" + inscripcionId;
         }
     }
 
-    /**
-     * Método auxiliar para convertir String a BigDecimal de forma segura
-     */
     private BigDecimal convertirANota(String valor) {
         if (valor == null || valor.trim().isEmpty()) {
             return null;
         }
         try {
-            // Reemplazar coma por punto si es necesario
             valor = valor.replace(",", ".").trim();
             BigDecimal nota = new BigDecimal(valor);
-            // Validar rango
             if (nota.compareTo(BigDecimal.ZERO) < 0 || nota.compareTo(new BigDecimal("10")) > 0) {
-                System.out.println("⚠️ Nota fuera de rango: " + nota + " (debe ser 0-10)");
                 return null;
             }
             return nota;
         } catch (NumberFormatException e) {
-            System.out.println("⚠️ Valor no numérico ignorado: '" + valor + "'");
             return null;
         }
     }

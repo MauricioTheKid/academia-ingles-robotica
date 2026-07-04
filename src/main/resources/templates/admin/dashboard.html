@@ -1,125 +1,510 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Panel de Administración - Academia San Luis</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+    />
     <style>
-        *{margin:0;padding:0;box-sizing:border-box;}
-        body{font-family:'Segoe UI',sans-serif;background:#f7fafc;display:flex;}
-        .sidebar{width:250px;background:#1a3a5c;min-height:100vh;padding:20px;color:white;}
-        .sidebar h2{font-size:1.2rem;margin-bottom:25px;}
-        .sidebar a{display:block;color:#e2e8f0;text-decoration:none;padding:10px;margin:5px 0;border-radius:6px;}
-        .sidebar a:hover{background:#2c5282;}
-        .main{flex:1;padding:30px;}
-        .header{background:white;padding:20px;border-radius:10px;margin-bottom:25px;}
-        .stats{display:flex;gap:20px;flex-wrap:wrap;margin-bottom:25px;}
-        .stat-card{background:white;padding:25px;border-radius:10px;box-shadow:0 2px 10px rgba(0,0,0,0.1);flex:1;min-width:180px;text-align:center;}
-        .stat-card h3{font-size:2.5rem;}
-        .stat-card p{color:#718096;margin-top:5px;}
-        .blue{color:#3182ce;}.green{color:#38a169;}.purple{color:#805ad5;}.orange{color:#dd6b20;}
-        .quick-actions{background:white;padding:20px;border-radius:10px;margin-top:25px;}
-        .btn{display:inline-block;padding:10px 20px;margin:5px;border-radius:6px;text-decoration:none;color:white;font-weight:600;}
-        .btn-blue{background:#3182ce;}.btn-green{background:#38a169;}.btn-purple{background:#805ad5;}.btn-orange{background:#dd6b20;}
-        .section{background:white;padding:20px;border-radius:10px;margin-bottom:25px;box-shadow:0 2px 10px rgba(0,0,0,0.1);}
-        h2{color:#1a3a5c;margin-bottom:15px;}
-        h3{color:#2c5282;margin-bottom:10px;}
-        table{width:100%;border-collapse:collapse;}
-        th,td{padding:10px;text-align:left;border-bottom:1px solid #e2e8f0;}
-        th{background:#edf2f7;font-size:0.8rem;}
-        td{font-size:0.8rem;}
-        .badge{padding:4px 8px;border-radius:20px;font-size:0.7rem;}
-        .badge-success{background:#c6f6d5;color:#276749;}
-        .badge-warning{background:#fefcbf;color:#975a16;}
-        .badge-danger{background:#fed7d7;color:#9b2c2c;}
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        font-family: "Segoe UI", sans-serif;
+        background: #f7fafc;
+        display: flex;
+      }
+
+      /* SIDEBAR CON EFECTO HOVER (BAMBOLEO) */
+      .sidebar {
+        width: 250px;
+        background: linear-gradient(
+          180deg,
+          #1a1a2e 0%,
+          #16213e 50%,
+          #0f3460 100%
+        );
+        min-height: 100vh;
+        padding: 20px;
+        color: white;
+        position: fixed;
+        left: 0;
+        top: 0;
+        bottom: 0;
+      }
+
+      /* HEADER DEL SIDEBAR PROFESIONAL */
+      .sidebar-header {
+        text-align: center;
+        margin-bottom: 30px;
+        padding-bottom: 20px;
+        border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+      }
+      .sidebar-icon {
+        width: 65px;
+        height: 65px;
+        background: linear-gradient(135deg, #e94560, #c23152);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 12px;
+        font-size: 2rem;
+        box-shadow: 0 5px 20px rgba(233, 69, 96, 0.4);
+      }
+      .sidebar-title {
+        font-size: 1.2rem;
+        font-weight: bold;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        background: linear-gradient(135deg, #e94560, #ff6b6b);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+      .sidebar-subtitle {
+        font-size: 0.7rem;
+        color: #a0a0b8;
+        margin-top: 4px;
+        letter-spacing: 1px;
+      }
+
+      .sidebar a {
+        display: block;
+        color: #e2e8f0;
+        text-decoration: none;
+        padding: 12px 15px;
+        margin: 5px 0;
+        border-radius: 8px;
+        transition: all 0.3s;
+      }
+      .sidebar a:hover {
+        background: rgba(255, 255, 255, 0.1);
+        color: white;
+        transform: translateX(5px);
+      }
+      .sidebar a.active {
+        background: rgba(233, 69, 96, 0.3);
+        font-weight: bold;
+        border-left: 3px solid #e94560;
+      }
+
+      .main {
+        flex: 1;
+        padding: 30px;
+        margin-left: 250px;
+      }
+
+      .header {
+        background: white;
+        padding: 25px;
+        border-radius: 15px;
+        margin-bottom: 25px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+      }
+      .header h1 {
+        color: #1a1a2e;
+        margin-bottom: 5px;
+      }
+      .header p {
+        color: #718096;
+      }
+
+      .stats {
+        display: flex;
+        gap: 20px;
+        flex-wrap: wrap;
+        margin-bottom: 25px;
+      }
+      .stat-card {
+        background: white;
+        padding: 25px;
+        border-radius: 15px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        flex: 1;
+        min-width: 180px;
+        text-align: center;
+        transition: transform 0.3s;
+      }
+      .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+      }
+      .stat-card i {
+        font-size: 2rem;
+        margin-bottom: 10px;
+      }
+      .stat-card h3 {
+        font-size: 2.5rem;
+        margin: 10px 0;
+      }
+      .stat-card p {
+        color: #718096;
+        margin-top: 5px;
+      }
+
+      .blue {
+        color: #3182ce;
+      }
+      .green {
+        color: #38a169;
+      }
+      .purple {
+        color: #805ad5;
+      }
+      .orange {
+        color: #dd6b20;
+      }
+
+      .section {
+        background: white;
+        padding: 25px;
+        border-radius: 15px;
+        margin-bottom: 25px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+      }
+      h2 {
+        color: #1a1a2e;
+        margin-bottom: 15px;
+      }
+      h3 {
+        color: #2c5282;
+        margin-bottom: 10px;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      th,
+      td {
+        padding: 10px;
+        text-align: left;
+        border-bottom: 1px solid #e2e8f0;
+      }
+      th {
+        background: #f7fafc;
+        color: #1a1a2e;
+        font-weight: 600;
+        font-size: 0.8rem;
+      }
+      td {
+        font-size: 0.8rem;
+      }
+      tbody tr:hover {
+        background: #f7fafc;
+      }
+
+      .badge {
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 0.7rem;
+        font-weight: bold;
+      }
+      .badge-success {
+        background: #c6f6d5;
+        color: #276749;
+      }
+      .badge-warning {
+        background: #fefcbf;
+        color: #975a16;
+      }
+      .badge-danger {
+        background: #fed7d7;
+        color: #9b2c2c;
+      }
+
+      .quick-actions {
+        background: white;
+        padding: 25px;
+        border-radius: 15px;
+        margin-top: 25px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+      }
+      .btn {
+        display: inline-block;
+        padding: 12px 20px;
+        margin: 5px;
+        border-radius: 25px;
+        text-decoration: none;
+        color: white;
+        font-weight: 600;
+        transition: all 0.3s;
+      }
+      .btn:hover {
+        transform: scale(1.05);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+      }
+      .btn-blue {
+        background: linear-gradient(135deg, #3182ce, #63b3ed);
+      }
+      .btn-green {
+        background: linear-gradient(135deg, #38a169, #68d391);
+      }
+      .btn-purple {
+        background: linear-gradient(135deg, #805ad5, #b794f4);
+      }
+      .btn-orange {
+        background: linear-gradient(135deg, #dd6b20, #f6ad55);
+      }
+
+      .btn-action {
+        display: inline-block;
+        padding: 5px 10px;
+        border-radius: 50%;
+        text-decoration: none;
+        font-size: 0.8rem;
+        transition: all 0.3s;
+      }
+      .btn-action:hover {
+        transform: scale(1.2);
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <div class="sidebar">
-        <h2>⚙️ Admin Panel</h2>
-        <a href="/admin/dashboard">📊 Dashboard</a>
-        <a href="/admin/usuarios">👥 Usuarios</a>
-        <a href="/cursos">📚 Cursos</a>
-        <a href="/horarios">🕐 Horarios</a>
-        <a href="/materiales">📁 Materiales</a>
-        <a href="/admin/inscripciones">📋 Inscripciones</a>
-        <a href="/admin/calificaciones">⭐ Calificaciones</a>
-        <a href="/admin/reportes">📋 Reportes</a>
-        <a href="/perfil">👤 Mi Perfil</a>
-        <a href="/auth/logout">🚪 Cerrar Sesión</a>
+      <!-- HEADER PROFESIONAL -->
+      <div class="sidebar-header">
+        <div class="sidebar-icon">🛡️</div>
+        <div class="sidebar-title">Admin Panel</div>
+        <div class="sidebar-subtitle">Control Total</div>
+      </div>
+
+      <a href="/admin/dashboard" class="active"
+        ><i class="fas fa-tachometer-alt me-2"></i>Dashboard</a
+      >
+      <a href="/admin/usuarios"><i class="fas fa-users me-2"></i>Usuarios</a>
+      <a href="/cursos"><i class="fas fa-book me-2"></i>Cursos</a>
+      <a href="/horarios"><i class="fas fa-clock me-2"></i>Horarios</a>
+      <a href="/materiales"><i class="fas fa-folder me-2"></i>Materiales</a>
+      <a href="/admin/inscripciones"
+        ><i class="fas fa-file-alt me-2"></i>Inscripciones</a
+      >
+      <a href="/admin/calificaciones"
+        ><i class="fas fa-star me-2"></i>Calificaciones</a
+      >
+      <a href="/admin/reportes"
+        ><i class="fas fa-chart-bar me-2"></i>Reportes</a
+      >
+      <a href="/perfil"><i class="fas fa-user me-2"></i>Mi Perfil</a>
+      <a href="/auth/logout"
+        ><i class="fas fa-sign-out-alt me-2"></i>Cerrar Sesión</a
+      >
     </div>
+
     <div class="main">
-        <div class="header"><h1>📊 Panel de Administración</h1><p style="color:#718096;">Centro Escolar Católico San Luis</p></div>
+      <div class="header">
+        <h1><i class="fas fa-chart-line me-2"></i>Panel de Administración</h1>
+        <p style="color: #718096">Centro Escolar Católico San Luis</p>
+      </div>
 
-        <div class="stats">
-            <div class="stat-card"><h3 class="blue" th:text="${totalUsuarios}">0</h3><p>Usuarios Totales</p></div>
-            <div class="stat-card"><h3 class="green" th:text="${totalCursos}">0</h3><p>Cursos Activos</p></div>
-            <div class="stat-card"><h3 class="purple" th:text="${totalReservas}">0</h3><p>Reservas Totales</p></div>
-            <div class="stat-card"><h3 class="orange">$850</h3><p>Ingresos del Mes</p></div>
+      <div class="stats">
+        <div class="stat-card">
+          <i class="fas fa-users" style="color: #3182ce"></i>
+          <h3 class="blue" th:text="${totalUsuarios}">0</h3>
+          <p>Usuarios Totales</p>
+        </div>
+        <div class="stat-card">
+          <i class="fas fa-book-open" style="color: #38a169"></i>
+          <h3 class="green" th:text="${totalCursos}">0</h3>
+          <p>Cursos Activos</p>
+        </div>
+        <div class="stat-card">
+          <i class="fas fa-calendar-check" style="color: #805ad5"></i>
+          <h3 class="purple" th:text="${totalReservas}">0</h3>
+          <p>Reservas Totales</p>
+        </div>
+        <div class="stat-card">
+          <i class="fas fa-dollar-sign" style="color: #dd6b20"></i>
+          <h3 class="orange">$850</h3>
+          <p>Ingresos del Mes</p>
+        </div>
+      </div>
+
+      <div class="section">
+        <h2><i class="fas fa-chart-pie me-2"></i>Gráficos de Reservas</h2>
+        <div style="display: flex; gap: 20px; flex-wrap: wrap">
+          <div style="flex: 1; min-width: 300px; max-width: 450px">
+            <canvas id="chartReservas"></canvas>
+          </div>
+          <div style="flex: 1; min-width: 300px; max-width: 450px">
+            <canvas id="chartCursos"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <h2><i class="fas fa-clipboard-list me-2"></i>Reporte de Reservas</h2>
+        <div class="stats" style="margin-bottom: 15px">
+          <div class="stat-card">
+            <i class="fas fa-list" style="color: #805ad5"></i>
+            <h3 class="purple" th:text="${totalReservas}">0</h3>
+            <p>Total Reservas</p>
+          </div>
+          <div class="stat-card">
+            <i class="fas fa-clock" style="color: #d69e2e"></i>
+            <h3 style="color: #d69e2e" th:text="${pendientes}">0</h3>
+            <p>Pendientes</p>
+          </div>
+          <div class="stat-card">
+            <i class="fas fa-check-circle" style="color: #38a169"></i>
+            <h3 class="green" th:text="${confirmadas}">0</h3>
+            <p>Confirmadas</p>
+          </div>
         </div>
 
-        <div class="section">
-            <h2>📈 Gráficos de Reservas</h2>
-            <div style="display:flex;gap:20px;flex-wrap:wrap;">
-                <div style="flex:1;min-width:300px;max-width:450px;"><canvas id="chartReservas"></canvas></div>
-                <div style="flex:1;min-width:300px;max-width:450px;"><canvas id="chartCursos"></canvas></div>
-            </div>
-        </div>
+        <h3><i class="fas fa-history me-2"></i>Últimas Reservas</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Usuario</th>
+              <th>Curso</th>
+              <th>Día</th>
+              <th>Estado</th>
+              <th>Acción</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr th:each="reserva : ${ultimasReservas}">
+              <td th:text="${reserva.id}">1</td>
+              <td
+                th:text="${reserva.usuario.nombre} + ' ' + ${reserva.usuario.apellido}"
+              >
+                Usuario
+              </td>
+              <td th:text="${reserva.horario.curso.nombre}">Curso</td>
+              <td th:text="${reserva.horario.diaSemana}">Día</td>
+              <td>
+                <span
+                  th:if="${reserva.estado == 'CONFIRMADA'}"
+                  class="badge badge-success"
+                  >Confirmada</span
+                >
+                <span
+                  th:if="${reserva.estado == 'PENDIENTE'}"
+                  class="badge badge-warning"
+                  >Pendiente</span
+                >
+                <span
+                  th:if="${reserva.estado == 'CANCELADA'}"
+                  class="badge badge-danger"
+                  >Cancelada</span
+                >
+              </td>
+              <td>
+                <a
+                  th:if="${reserva.estado == 'PENDIENTE'}"
+                  th:href="@{/admin/confirmar-reserva/{id}(id=${reserva.id})}"
+                  class="btn-action"
+                  style="background: #38a169; color: white"
+                  title="Confirmar"
+                  >✅</a
+                >
+                <a
+                  th:if="${reserva.estado == 'PENDIENTE'}"
+                  th:href="@{/admin/cancelar-reserva/{id}(id=${reserva.id})}"
+                  class="btn-action"
+                  style="background: #e53e3e; color: white; margin-left: 4px"
+                  title="Cancelar"
+                  onclick="return confirm('¿Cancelar esta reserva?');"
+                  >❌</a
+                >
+                <span
+                  th:if="${reserva.estado == 'CONFIRMADA'}"
+                  style="color: #38a169"
+                  >✓</span
+                >
+                <span
+                  th:if="${reserva.estado == 'CANCELADA'}"
+                  style="color: #e53e3e"
+                  >✗</span
+                >
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
 
-        <div class="section">
-            <h2>📊 Reporte de Reservas</h2>
-            <div class="stats" style="margin-bottom:15px;">
-                <div class="stat-card"><h3 class="purple" th:text="${totalReservas}">0</h3><p>Total Reservas</p></div>
-                <div class="stat-card"><h3 style="color:#d69e2e;" th:text="${pendientes}">0</h3><p>Pendientes</p></div>
-                <div class="stat-card"><h3 class="green" th:text="${confirmadas}">0</h3><p>Confirmadas</p></div>
-            </div>
-            <h3>Últimas Reservas</h3>
-            <table>
-                <thead><tr><th>ID</th><th>Usuario</th><th>Curso</th><th>Día</th><th>Estado</th><th>Acción</th></tr></thead>
-                <tbody>
-                    <tr th:each="reserva : ${ultimasReservas}">
-                        <td th:text="${reserva.id}">1</td>
-                        <td th:text="${reserva.usuario.nombre} + ' ' + ${reserva.usuario.apellido}">Usuario</td>
-                        <td th:text="${reserva.horario.curso.nombre}">Curso</td>
-                        <td th:text="${reserva.horario.diaSemana}">Día</td>
-                        <td>
-                            <span th:if="${reserva.estado == 'CONFIRMADA'}" class="badge badge-success">Confirmada</span>
-                            <span th:if="${reserva.estado == 'PENDIENTE'}" class="badge badge-warning">Pendiente</span>
-                            <span th:if="${reserva.estado == 'CANCELADA'}" class="badge badge-danger">Cancelada</span>
-                        </td>
-                        <td>
-                            <a th:if="${reserva.estado == 'PENDIENTE'}" th:href="@{/admin/confirmar-reserva/{id}(id=${reserva.id})}" style="background:#38a169;color:white;text-decoration:none;padding:3px 6px;border-radius:3px;font-size:0.65rem;">✅</a>
-                            <a th:if="${reserva.estado == 'PENDIENTE'}" th:href="@{/admin/cancelar-reserva/{id}(id=${reserva.id})}" style="background:#e53e3e;color:white;text-decoration:none;padding:3px 6px;border-radius:3px;font-size:0.65rem;margin-left:4px;" onclick="return confirm('¿Cancelar esta reserva?')">❌</a>
-                            <span th:if="${reserva.estado == 'CONFIRMADA'}" style="color:#38a169;font-size:0.7rem;">✓</span>
-                            <span th:if="${reserva.estado == 'CANCELADA'}" style="color:#e53e3e;font-size:0.7rem;">✗</span>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-
-        <div class="quick-actions">
-            <h2>⚡ Acciones Rápidas</h2>
-            <a href="/admin/usuarios" class="btn btn-blue">👥 Gestionar Usuarios</a>
-            <a href="/cursos/nuevo" class="btn btn-green">📚 Nuevo Curso</a>
-            <a href="/horarios/nuevo" class="btn btn-orange">🕐 Nuevo Horario</a>
-            <a href="/admin/inscripciones" class="btn btn-purple">📋 Ver Inscripciones</a>
-            <a href="/admin/calificaciones" class="btn btn-purple">⭐ Ver Calificaciones</a>
-            <a href="/admin/reportes" class="btn btn-purple">📋 Ver Reportes</a>
-        </div>
+      <div class="quick-actions">
+        <h2><i class="fas fa-bolt me-2"></i>Acciones Rápidas</h2>
+        <a href="/admin/usuarios" class="btn btn-blue"
+          ><i class="fas fa-users me-1"></i>Gestionar Usuarios</a
+        >
+        <a href="/cursos/nuevo" class="btn btn-green"
+          ><i class="fas fa-plus-circle me-1"></i>Nuevo Curso</a
+        >
+        <a href="/horarios/nuevo" class="btn btn-orange"
+          ><i class="fas fa-clock me-1"></i>Nuevo Horario</a
+        >
+        <a href="/admin/inscripciones" class="btn btn-purple"
+          ><i class="fas fa-file-alt me-1"></i>Ver Inscripciones</a
+        >
+        <a href="/admin/calificaciones" class="btn btn-purple"
+          ><i class="fas fa-star me-1"></i>Ver Calificaciones</a
+        >
+        <a href="/admin/reportes" class="btn btn-purple"
+          ><i class="fas fa-chart-bar me-1"></i>Ver Reportes</a
+        >
+      </div>
     </div>
 
     <script>
-        var pendientes = /*[[${pendientesAttr}]]*/ 8;
-        var confirmadas = /*[[${confirmadasAttr}]]*/ 3;
-        var usuarios = /*[[${usuariosAttr}]]*/ 8;
-        var cursos = /*[[${cursosAttr}]]*/ 5;
-        var reservas = /*[[${reservasAttr}]]*/ 11;
-        var ctx1 = document.getElementById('chartReservas').getContext('2d');
-        new Chart(ctx1, {type:'doughnut',data:{labels:['Pendientes','Confirmadas'],datasets:[{data:[pendientes,confirmadas],backgroundColor:['#d69e2e','#38a169'],borderWidth:1}]},options:{responsive:true,plugins:{legend:{position:'bottom'},title:{display:true,text:'Estado de Reservas'}}}});
-        var ctx2 = document.getElementById('chartCursos').getContext('2d');
-        new Chart(ctx2, {type:'bar',data:{labels:['Usuarios','Cursos','Reservas'],datasets:[{label:'Totales',data:[usuarios,cursos,reservas],backgroundColor:['#3182ce','#38a169','#805ad5'],borderWidth:1}]},options:{responsive:true,plugins:{legend:{display:false},title:{display:true,text:'Resumen General'}},scales:{y:{beginAtZero:true,ticks:{stepSize:1}}}}});
+      var pendientes = /*[[${pendientesAttr}]]*/ 8;
+      var confirmadas = /*[[${confirmadasAttr}]]*/ 3;
+      var usuarios = /*[[${usuariosAttr}]]*/ 8;
+      var cursos = /*[[${cursosAttr}]]*/ 5;
+      var reservas = /*[[${reservasAttr}]]*/ 11;
+      var ctx1 = document.getElementById("chartReservas").getContext("2d");
+      new Chart(ctx1, {
+        type: "doughnut",
+        data: {
+          labels: ["Pendientes", "Confirmadas"],
+          datasets: [
+            {
+              data: [pendientes, confirmadas],
+              backgroundColor: ["#d69e2e", "#38a169"],
+              borderWidth: 1,
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: { position: "bottom" },
+            title: { display: true, text: "Estado de Reservas" },
+          },
+        },
+      });
+      var ctx2 = document.getElementById("chartCursos").getContext("2d");
+      new Chart(ctx2, {
+        type: "bar",
+        data: {
+          labels: ["Usuarios", "Cursos", "Reservas"],
+          datasets: [
+            {
+              label: "Totales",
+              data: [usuarios, cursos, reservas],
+              backgroundColor: ["#3182ce", "#38a169", "#805ad5"],
+              borderWidth: 1,
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: { display: false },
+            title: { display: true, text: "Resumen General" },
+          },
+          scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } },
+        },
+      });
     </script>
-</body>
-</html> 
+  </body>
+</html>

@@ -1,98 +1,361 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Cursos - Academia San Luis</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+    />
     <style>
-        *{margin:0;padding:0;box-sizing:border-box;}
-        body{font-family:'Segoe UI',sans-serif;background:#f7fafc;}
-        .navbar{background:#1a3a5c;padding:15px 40px;display:flex;justify-content:space-between;align-items:center;}
-        .navbar .logo{color:white;font-size:1.4rem;font-weight:700;}
-        .navbar a{color:#e2e8f0;text-decoration:none;margin-left:25px;}
-        .container{max-width:1100px;margin:40px auto;padding:20px;}
-        h1{text-align:center;color:#1a3a5c;margin-bottom:10px;}
-        .subtitle{text-align:center;color:#718096;margin-bottom:20px;}
-        .btn-nuevo{display:inline-block;background:#38a169;color:white;padding:10px 20px;border-radius:8px;text-decoration:none;margin-bottom:20px;font-weight:600;}
-        table{width:100%;border-collapse:collapse;background:white;border-radius:10px;overflow:hidden;}
-        th,td{padding:12px 15px;text-align:left;border-bottom:1px solid #e2e8f0;}
-        th{background:#edf2f7;color:#2d3748;}
-        tr:hover{background:#f7fafc;}
-        .btn{padding:6px 14px;border-radius:6px;text-decoration:none;font-size:0.8rem;font-weight:600;color:white;margin:0 3px;}
-        .btn-edit{background:#3182ce;}
-        .btn-delete{background:#e53e3e;}
-        .btn-reservar{background:#38a169;color:white;padding:5px 10px;border-radius:5px;text-decoration:none;font-size:0.75rem;}
-        .badge{padding:4px 10px;border-radius:20px;font-size:0.75rem;}
-        .badge-activo{background:#c6f6d5;color:#276749;}
-        .search-box{width:100%;max-width:400px;padding:10px 15px;border:2px solid #e2e8f0;border-radius:8px;font-size:0.95rem;transition:border-color 0.3s;}
-        .search-box:focus{outline:none;border-color:#3182ce;box-shadow:0 0 0 3px rgba(49,130,206,0.2);}
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        font-family: "Segoe UI", sans-serif;
+        background: #f7fafc;
+      }
+      .navbar {
+        background: #1a3a5c;
+        padding: 15px 40px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .navbar .logo {
+        color: white;
+        font-size: 1.4rem;
+        font-weight: 700;
+      }
+      .navbar a {
+        color: #e2e8f0;
+        text-decoration: none;
+        margin-left: 25px;
+        transition: color 0.3s;
+      }
+      .navbar a:hover {
+        color: #63b3ed;
+      }
+      .container {
+        max-width: 1100px;
+        margin: 40px auto;
+        padding: 20px;
+      }
+      h1 {
+        text-align: center;
+        color: #1a3a5c;
+        margin-bottom: 10px;
+      }
+      .subtitle {
+        text-align: center;
+        color: #718096;
+        margin-bottom: 20px;
+      }
+
+      .search-box {
+        width: 100%;
+        max-width: 400px;
+        padding: 12px 20px;
+        border: 2px solid #e2e8f0;
+        border-radius: 25px;
+        font-size: 0.95rem;
+        transition: all 0.3s;
+        margin-bottom: 20px;
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
+      }
+      .search-box:focus {
+        outline: none;
+        border-color: #3182ce;
+        box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.2);
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        background: white;
+        border-radius: 15px;
+        overflow: hidden;
+        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+      }
+      th,
+      td {
+        padding: 14px 15px;
+        text-align: left;
+        border-bottom: 1px solid #e2e8f0;
+      }
+      th {
+        background: #1a3a5c;
+        color: white;
+        font-weight: 600;
+        font-size: 0.85rem;
+      }
+      td {
+        font-size: 0.9rem;
+      }
+      tbody tr:hover {
+        background: #f7fafc;
+      }
+
+      .badge {
+        padding: 6px 14px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+      }
+      .badge-activo {
+        background: #c6f6d5;
+        color: #276749;
+      }
+      .badge-inactivo {
+        background: #fed7d7;
+        color: #9b2c2c;
+      }
+
+      .btn-reservar {
+        background: linear-gradient(135deg, #38a169, #68d391);
+        color: white;
+        padding: 8px 18px;
+        border-radius: 25px;
+        text-decoration: none;
+        font-size: 0.85rem;
+        font-weight: 600;
+        transition: all 0.3s;
+        display: inline-block;
+      }
+      .btn-reservar:hover {
+        transform: scale(1.05);
+        box-shadow: 0 5px 15px rgba(56, 161, 105, 0.4);
+      }
+
+      .btn-login-required {
+        background: linear-gradient(135deg, #3182ce, #63b3ed);
+        color: white;
+        padding: 8px 18px;
+        border-radius: 25px;
+        text-decoration: none;
+        font-size: 0.85rem;
+        font-weight: 600;
+        transition: all 0.3s;
+        display: inline-block;
+      }
+      .btn-login-required:hover {
+        transform: scale(1.05);
+        box-shadow: 0 5px 15px rgba(49, 130, 206, 0.4);
+      }
+
+      .btn-admin {
+        background: #3182ce;
+        padding: 6px 14px;
+        border-radius: 6px;
+        text-decoration: none;
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: white;
+        margin: 0 3px;
+      }
+      .btn-delete {
+        background: #e53e3e;
+        padding: 6px 14px;
+        border-radius: 6px;
+        text-decoration: none;
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: white;
+        margin: 0 3px;
+      }
+
+      .btn-login-nav {
+        background: #3182ce;
+        padding: 8px 20px;
+        border-radius: 25px;
+        color: white !important;
+        font-weight: 600;
+      }
+
+      .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        color: #718096;
+      }
+      .empty-state i {
+        font-size: 4rem;
+        margin-bottom: 15px;
+        color: #cbd5e0;
+      }
+
+      .alert-info-custom {
+        background: #ebf8ff;
+        border: 1px solid #3182ce;
+        color: #2c5282;
+        padding: 15px 20px;
+        border-radius: 10px;
+        margin-bottom: 20px;
+        text-align: center;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <nav class="navbar">
-        <div class="logo">🎓 Academia San Luis</div>
-        <div>
-            <a href="/">Inicio</a>
-            <a href="/publico/cursos">Cursos</a>
-            <a href="/publico/contacto">Contacto</a>
-            <a href="/auth/login">Iniciar Sesión</a>
-        </div>
+      <div class="logo">
+        <i class="fas fa-graduation-cap me-2"></i>Academia San Luis
+      </div>
+      <div>
+        <a href="/">Inicio</a>
+        <a href="/publico/cursos">Cursos</a>
+        <a href="/publico/contacto">Contacto</a>
+        <a href="/auth/login" class="btn-login-nav">Iniciar Sesión</a>
+      </div>
     </nav>
+
     <div class="container">
-        <h1>📚 Gestión de Cursos</h1>
-        <p class="subtitle">Administra los cursos de inglés y robótica</p>
+      <h1><i class="fas fa-book me-2"></i>Nuestros Cursos</h1>
+      <p class="subtitle">Explora nuestros programas de inglés y robótica</p>
 
-        <div style="margin-bottom:15px;text-align:center;">
-            <input type="text" id="buscarCurso" placeholder="🔍 Buscar curso por nombre..." class="search-box" onkeyup="filtrarCursos()">
-        </div>
+      <!-- MENSAJE PARA VISITANTES SIN SESIÓN -->
+      <div th:if="${session.usuarioEmail == null}" class="alert-info-custom">
+        <i class="fas fa-info-circle me-2"></i>
+        <strong>¿Te interesa un curso?</strong>
+        <a href="/auth/registro" style="color: #3182ce; font-weight: bold"
+          >Crea una cuenta</a
+        >
+        o
+        <a href="/auth/login" style="color: #3182ce; font-weight: bold"
+          >inicia sesión</a
+        >
+        para reservar tu cupo.
+      </div>
 
-        <a th:if="${session.usuarioEmail == 'admin@test.com'}" href="/cursos/nuevo" class="btn-nuevo" title="Crear un nuevo curso">➕ Nuevo Curso</a>
+      <input
+        type="text"
+        id="buscarCurso"
+        placeholder="🔍 Buscar curso por nombre..."
+        class="search-box"
+        onkeyup="filtrarCursos()"
+      />
 
-        <table id="tablaCursos">
-            <thead>
-                <tr>
-                    <th>ID</th><th>Nombre</th><th>Nivel</th><th>Duración</th><th>Precio</th><th>Estado</th>
-                    <th>Acción</th>
-                    <th th:if="${session.usuarioEmail == 'admin@test.com'}">Admin</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr th:each="curso : ${cursos}">
-                    <td th:text="${curso.id}">1</td>
-                    <td th:text="${curso.nombre}">Curso</td>
-                    <td th:text="${curso.nivel.nombre}">Nivel</td>
-                    <td th:text="${curso.duracionSemanas} + ' sem'">12 sem</td>
-                    <td th:text="'$' + ${curso.precio}">$75</td>
-                    <td><span class="badge badge-activo" th:text="${curso.activo ? 'Activo' : 'Inactivo'}">Activo</span></td>
-                    <td>
-                        <a th:href="@{/cursos/horarios/{id}(id=${curso.id})}" class="btn btn-reservar" title="Ver horarios y reservar cupo">📅 Reservar</a>
-                    </td>
-                    <td th:if="${session.usuarioEmail == 'admin@test.com'}">
-                        <a th:href="@{/cursos/editar/{id}(id=${curso.id})}" class="btn btn-edit" title="Editar este curso">✏️ Editar</a>
-                        <a th:href="@{/cursos/eliminar/{id}(id=${curso.id})}" class="btn btn-delete" onclick="return confirm('¿Eliminar este curso?')" title="Eliminar este curso permanentemente">🗑️ Eliminar</a>
-                    </td>
-                </tr>
-                <tr th:if="${#lists.isEmpty(cursos)}">
-                    <td th:colspan="${session.usuarioEmail == 'admin@test.com' ? 8 : 7}" style="text-align:center;">No hay cursos registrados.</td>
-                </tr>
-            </tbody>
-        </table>
+      <!-- BOTÓN NUEVO CURSO (SOLO ADMIN) -->
+      <a
+        th:if="${session.usuarioEmail == 'admin@test.com'}"
+        href="/cursos/nuevo"
+        style="
+          display: inline-block;
+          background: #38a169;
+          color: white;
+          padding: 10px 20px;
+          border-radius: 25px;
+          text-decoration: none;
+          margin-bottom: 20px;
+          font-weight: 600;
+        "
+      >
+        <i class="fas fa-plus-circle me-1"></i>Nuevo Curso
+      </a>
+
+      <table id="tablaCursos">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Nombre</th>
+            <th>Nivel</th>
+            <th>Duración</th>
+            <th>Precio</th>
+            <th>Estado</th>
+            <th>Acción</th>
+            <th th:if="${session.usuarioEmail == 'admin@test.com'}">Admin</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr th:each="curso : ${cursos}">
+            <td th:text="${curso.id}">1</td>
+            <td><strong th:text="${curso.nombre}">Curso</strong></td>
+            <td th:text="${curso.nivel.nombre}">Nivel</td>
+            <td th:text="${curso.duracionSemanas} + ' sem'">12 sem</td>
+            <td th:text="'$' + ${curso.precio}">$75</td>
+            <td>
+              <span
+                class="badge"
+                th:classappend="${curso.activo ? 'badge-activo' : 'badge-inactivo'}"
+                th:text="${curso.activo ? 'Activo' : 'Inactivo'}"
+                >Activo</span
+              >
+            </td>
+            <td>
+              <!-- SI HAY SESIÓN Y ES ALUMNO: MOSTRAR BOTÓN RESERVAR -->
+              <th:block
+                th:if="${session.usuarioEmail != null && session.usuarioEmail != 'admin@test.com'}"
+              >
+                <a
+                  th:href="@{/cursos/horarios/{id}(id=${curso.id})}"
+                  class="btn-reservar"
+                >
+                  <i class="fas fa-calendar-plus me-1"></i>Reservar
+                </a>
+              </th:block>
+
+              <!-- SI NO HAY SESIÓN: MOSTRAR BOTÓN PARA INICIAR SESIÓN -->
+              <th:block
+                th:unless="${session.usuarioEmail != null && session.usuarioEmail != 'admin@test.com'}"
+              >
+                <th:block th:if="${session.usuarioEmail == null}">
+                  <a href="/auth/login" class="btn-login-required">
+                    <i class="fas fa-sign-in-alt me-1"></i>Iniciar Sesión para
+                    Reservar
+                  </a>
+                </th:block>
+                <th:block th:if="${session.usuarioEmail == 'admin@test.com'}">
+                  <span style="color: #718096; font-size: 0.85rem">Admin</span>
+                </th:block>
+              </th:block>
+            </td>
+            <td th:if="${session.usuarioEmail == 'admin@test.com'}">
+              <a
+                th:href="@{/cursos/editar/{id}(id=${curso.id})}"
+                class="btn-admin"
+                >✏️ Editar</a
+              >
+              <a
+                th:href="@{/cursos/eliminar/{id}(id=${curso.id})}"
+                class="btn-delete"
+                onclick="return confirm('¿Eliminar este curso?');"
+                >🗑️ Eliminar</a
+              >
+            </td>
+          </tr>
+          <tr th:if="${#lists.isEmpty(cursos)}">
+            <td
+              th:colspan="${session.usuarioEmail == 'admin@test.com' ? 8 : 7}"
+            >
+              <div class="empty-state">
+                <i class="fas fa-book-open"></i>
+                <h3>No hay cursos disponibles</h3>
+                <p>Vuelve pronto para ver nuevos cursos.</p>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
     </div>
 
     <script>
-        function filtrarCursos() {
-            var input = document.getElementById("buscarCurso");
-            var filter = input.value.toLowerCase();
-            var table = document.getElementById("tablaCursos");
-            var rows = table.getElementsByTagName("tr");
-            for (var i = 1; i < rows.length; i++) {
-                var curso = rows[i].getElementsByTagName("td")[1];
-                if (curso) {
-                    var texto = curso.textContent || curso.innerText;
-                    rows[i].style.display = texto.toLowerCase().indexOf(filter) > -1 ? "" : "none";
-                }
-            }
+      function filtrarCursos() {
+        var input = document.getElementById("buscarCurso");
+        var filter = input.value.toLowerCase();
+        var table = document.getElementById("tablaCursos");
+        var rows = table.getElementsByTagName("tr");
+        for (var i = 1; i < rows.length; i++) {
+          var curso = rows[i].getElementsByTagName("td")[1];
+          if (curso) {
+            var texto = curso.textContent || curso.innerText;
+            rows[i].style.display =
+              texto.toLowerCase().indexOf(filter) > -1 ? "" : "none";
+          }
         }
+      }
     </script>
-</body>
-</html> 
+  </body>
+</html>
