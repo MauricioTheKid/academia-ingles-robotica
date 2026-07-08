@@ -1,85 +1,367 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Reportes - Admin</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+    />
     <style>
-        *{margin:0;padding:0;box-sizing:border-box;}
-        body{font-family:'Segoe UI',sans-serif;background:#f7fafc;display:flex;}
-        .sidebar{width:250px;background:#1a3a5c;min-height:100vh;padding:20px;color:white;}
-        .sidebar h2{font-size:1.2rem;margin-bottom:25px;}
-        .sidebar a{display:block;color:#e2e8f0;text-decoration:none;padding:10px;margin:5px 0;border-radius:6px;}
-        .sidebar a:hover{background:#2c5282;}
-        .main{flex:1;padding:30px;}
-        .header{background:white;padding:20px;border-radius:10px;margin-bottom:25px;}
-        h1{color:#1a3a5c;}
-        h2{color:#2c5282;margin:20px 0 10px 0;}
-        .cards{display:flex;gap:20px;flex-wrap:wrap;margin-bottom:25px;}
-        .card{background:white;padding:25px;border-radius:10px;box-shadow:0 2px 10px rgba(0,0,0,0.1);flex:1;min-width:200px;text-align:center;}
-        .card h3{font-size:2rem;color:#2c5282;}
-        .card p{color:#718096;margin-top:5px;}
-        .section{background:white;padding:20px;border-radius:10px;margin-bottom:20px;box-shadow:0 2px 8px rgba(0,0,0,0.08);}
-        table{width:100%;border-collapse:collapse;margin-top:10px;}
-        th,td{padding:10px;text-align:left;border-bottom:1px solid #e2e8f0;}
-        th{background:#edf2f7;font-size:0.85rem;}
-        td{font-size:0.8rem;}
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        font-family: "Segoe UI", sans-serif;
+        background: #f7fafc;
+        display: flex;
+      }
+
+      .sidebar {
+        width: 250px;
+        background: linear-gradient(
+          180deg,
+          #1a1a2e 0%,
+          #16213e 50%,
+          #0f3460 100%
+        );
+        min-height: 100vh;
+        padding: 20px;
+        color: white;
+        position: fixed;
+        left: 0;
+        top: 0;
+        bottom: 0;
+      }
+      .sidebar-header {
+        text-align: center;
+        margin-bottom: 30px;
+        padding-bottom: 20px;
+        border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+      }
+      .sidebar-icon {
+        width: 65px;
+        height: 65px;
+        background: linear-gradient(135deg, #e94560, #c23152);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 12px;
+        font-size: 2rem;
+        box-shadow: 0 5px 20px rgba(233, 69, 96, 0.4);
+      }
+      .sidebar-title {
+        font-size: 1.2rem;
+        font-weight: bold;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        background: linear-gradient(135deg, #e94560, #ff6b6b);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+      .sidebar-subtitle {
+        font-size: 0.7rem;
+        color: #a0a0b8;
+        margin-top: 4px;
+        letter-spacing: 1px;
+      }
+      .sidebar a {
+        display: block;
+        color: #e2e8f0;
+        text-decoration: none;
+        padding: 12px 15px;
+        margin: 5px 0;
+        border-radius: 8px;
+        transition: all 0.3s;
+      }
+      .sidebar a:hover {
+        background: rgba(255, 255, 255, 0.1);
+        color: white;
+        transform: translateX(5px);
+      }
+      .sidebar a.active {
+        background: rgba(233, 69, 96, 0.3);
+        font-weight: bold;
+        border-left: 3px solid #e94560;
+      }
+
+      .main {
+        flex: 1;
+        padding: 30px;
+        margin-left: 250px;
+      }
+      .header {
+        background: white;
+        padding: 25px;
+        border-radius: 15px;
+        margin-bottom: 25px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+      }
+      h1 {
+        color: #1a1a2e;
+      }
+      h2 {
+        color: #1a1a2e;
+        margin: 25px 0 15px 0;
+      }
+
+      .cards {
+        display: flex;
+        gap: 20px;
+        flex-wrap: wrap;
+        margin-bottom: 25px;
+      }
+      .card {
+        background: white;
+        padding: 25px;
+        border-radius: 15px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        flex: 1;
+        min-width: 180px;
+        text-align: center;
+        transition: transform 0.3s;
+      }
+      .card:hover {
+        transform: translateY(-5px);
+      }
+      .card i {
+        font-size: 2rem;
+        margin-bottom: 10px;
+      }
+      .card h3 {
+        font-size: 2rem;
+        color: #1a1a2e;
+      }
+      .card p {
+        color: #718096;
+        margin-top: 5px;
+      }
+
+      .curso-section {
+        background: white;
+        border-radius: 15px;
+        margin-bottom: 25px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        overflow: hidden;
+      }
+      .curso-header {
+        background: linear-gradient(135deg, #1a1a2e, #0f3460);
+        color: white;
+        padding: 15px 25px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .curso-header h5 {
+        margin: 0;
+        font-size: 1.1rem;
+      }
+      .curso-badge {
+        background: rgba(255, 255, 255, 0.2);
+        padding: 5px 15px;
+        border-radius: 20px;
+        font-size: 0.85rem;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      th,
+      td {
+        padding: 12px 15px;
+        text-align: left;
+        border-bottom: 1px solid #e2e8f0;
+      }
+      th {
+        background: #f7fafc;
+        color: #1a1a2e;
+        font-weight: 600;
+        font-size: 0.8rem;
+      }
+      td {
+        font-size: 0.85rem;
+      }
+      tbody tr:hover {
+        background: #f7fafc;
+      }
+
+      .badge {
+        padding: 5px 12px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: bold;
+      }
+      .badge-success {
+        background: #c6f6d5;
+        color: #276749;
+      }
+      .badge-warning {
+        background: #fefcbf;
+        color: #975a16;
+      }
+      .badge-danger {
+        background: #fed7d7;
+        color: #9b2c2c;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <div class="sidebar">
-        <h2>⚙️ Admin Panel</h2>
-        <a href="/admin/dashboard">📊 Dashboard</a>
-        <a href="/admin/usuarios">👥 Usuarios</a>
-        <a href="/cursos">📚 Cursos</a>
-        <a href="/horarios">🕐 Horarios</a>
-        <a href="/admin/reportes" style="background:#2c5282;">📋 Reportes</a>
-        <a href="/perfil">👤 Mi Perfil</a>
-        <a href="/auth/logout">🚪 Salir</a>
+      <div class="sidebar-header">
+        <div class="sidebar-icon">🛡️</div>
+        <div class="sidebar-title">Admin Panel</div>
+        <div class="sidebar-subtitle">Control Total</div>
+      </div>
+      <a href="/admin/dashboard"
+        ><i class="fas fa-tachometer-alt me-2"></i>Dashboard</a
+      >
+      <a href="/admin/usuarios"><i class="fas fa-users me-2"></i>Usuarios</a>
+      <a href="/cursos"><i class="fas fa-book me-2"></i>Cursos</a>
+      <a href="/horarios"><i class="fas fa-clock me-2"></i>Horarios</a>
+      <a href="/materiales"><i class="fas fa-folder me-2"></i>Materiales</a>
+      <a href="/admin/inscripciones"
+        ><i class="fas fa-file-alt me-2"></i>Inscripciones</a
+      >
+      <a href="/admin/reportes" class="active"
+        ><i class="fas fa-chart-bar me-2"></i>Reportes</a
+      >
+      <a href="/perfil"><i class="fas fa-user me-2"></i>Mi Perfil</a>
+      <a href="/auth/logout"
+        ><i class="fas fa-sign-out-alt me-2"></i>Cerrar Sesión</a
+      >
     </div>
+
     <div class="main">
-        <div class="header"><h1>📋 Reportes del Sistema</h1></div>
+      <div class="header">
+        <h1><i class="fas fa-chart-bar me-2"></i>Reportes del Sistema</h1>
+      </div>
 
-        <h2>📊 Resumen General</h2>
-        <div class="cards">
-            <div class="card"><h3 th:text="${totalUsuarios}">0</h3><p>Usuarios Registrados</p></div>
-            <div class="card"><h3 th:text="${totalCursos}">0</h3><p>Cursos Activos</p></div>
-            <div class="card"><h3 th:text="${totalReservas}">0</h3><p>Reservas Totales</p></div>
-            <div class="card"><h3 th:text="${pendientes}">0</h3><p>Pendientes</p></div>
-            <div class="card"><h3 th:text="${confirmadas}">0</h3><p>Confirmadas</p></div>
+      <!-- RESUMEN GENERAL -->
+      <h2><i class="fas fa-chart-pie me-2"></i>Resumen General</h2>
+      <div class="cards">
+        <div class="card">
+          <i class="fas fa-users" style="color: #3182ce"></i>
+          <h3 th:text="${totalUsuarios}">0</h3>
+          <p>Usuarios Registrados</p>
         </div>
+        <div class="card">
+          <i class="fas fa-book-open" style="color: #38a169"></i>
+          <h3 th:text="${totalCursos}">0</h3>
+          <p>Cursos Activos</p>
+        </div>
+        <div class="card">
+          <i class="fas fa-calendar-check" style="color: #805ad5"></i>
+          <h3 th:text="${totalReservas}">0</h3>
+          <p>Reservas Totales</p>
+        </div>
+        <div class="card">
+          <i class="fas fa-clock" style="color: #d69e2e"></i>
+          <h3 th:text="${pendientes}">0</h3>
+          <p>Pendientes</p>
+        </div>
+        <div class="card">
+          <i class="fas fa-check-circle" style="color: #38a169"></i>
+          <h3 th:text="${confirmadas}">0</h3>
+          <p>Confirmadas</p>
+        </div>
+      </div>
 
-        <div class="section">
-            <h2>📅 Últimas Reservas</h2>
-            <table>
-                <thead><tr><th>ID</th><th>Usuario</th><th>Curso</th><th>Día</th><th>Horario</th><th>Estado</th></tr></thead>
-                <tbody>
-                    <tr th:each="reserva : ${ultimasReservas}">
-                        <td th:text="${reserva.id}">1</td>
-                        <td th:text="${reserva.usuario.nombre} + ' ' + ${reserva.usuario.apellido}">Usuario</td>
-                        <td th:text="${reserva.horario.curso.nombre}">Curso</td>
-                        <td th:text="${reserva.horario.diaSemana}">Día</td>
-                        <td th:text="${reserva.horario.horaInicio} + ' - ' + ${reserva.horario.horaFin}">Horario</td>
-                        <td th:text="${reserva.estado}">Estado</td>
-                    </tr>
-                </tbody>
-            </table>
+      <!-- ÚLTIMAS RESERVAS AGRUPADAS POR CURSO -->
+      <h2><i class="fas fa-history me-2"></i>Últimas Reservas</h2>
+      <div th:each="entry : ${reservasPorCurso}" class="curso-section">
+        <div class="curso-header">
+          <h5>
+            <i class="fas fa-book me-2"></i><span th:text="${entry.key}"></span>
+          </h5>
+          <span
+            class="curso-badge"
+            th:text="${entry.value.size() + ' reserva(s)'}"
+          ></span>
         </div>
+        <div style="padding: 0">
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Usuario</th>
+                <th>Día</th>
+                <th>Horario</th>
+                <th>Estado</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr th:each="reserva : ${entry.value}">
+                <td th:text="${reserva.id}">1</td>
+                <td
+                  th:text="${reserva.usuario.nombre} + ' ' + ${reserva.usuario.apellido}"
+                >
+                  Usuario
+                </td>
+                <td th:text="${reserva.horario.diaSemana}">Día</td>
+                <td
+                  th:text="${reserva.horario.horaInicio} + ' - ' + ${reserva.horario.horaFin}"
+                >
+                  Horario
+                </td>
+                <td>
+                  <span
+                    th:if="${reserva.estado == 'CONFIRMADA'}"
+                    class="badge badge-success"
+                    >Confirmada</span
+                  >
+                  <span
+                    th:if="${reserva.estado == 'PENDIENTE'}"
+                    class="badge badge-warning"
+                    >Pendiente</span
+                  >
+                  <span
+                    th:if="${reserva.estado == 'CANCELADA'}"
+                    class="badge badge-danger"
+                    >Cancelada</span
+                  >
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div
+        th:if="${#maps.isEmpty(reservasPorCurso)}"
+        class="curso-section"
+        style="text-align: center; padding: 40px; color: #718096"
+      >
+        <i class="fas fa-inbox fa-3x mb-3" style="color: #cbd5e0"></i>
+        <p>No hay reservas registradas.</p>
+      </div>
 
-        <div class="section">
-            <h2>⭐ Cursos Disponibles</h2>
-            <table>
-                <thead><tr><th>Curso</th><th>Nivel</th><th>Duración</th><th>Precio</th></tr></thead>
-                <tbody>
-                    <tr th:each="curso : ${cursosPopulares}">
-                        <td th:text="${curso.nombre}">Curso</td>
-                        <td th:text="${curso.nivel.nombre}">Nivel</td>
-                        <td th:text="${curso.duracionSemanas} + ' sem'">12 sem</td>
-                        <td th:text="'$' + ${curso.precio}">$0</td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
+      <!-- CURSOS DISPONIBLES -->
+      <h2><i class="fas fa-book me-2"></i>Cursos Disponibles</h2>
+      <div class="curso-section">
+        <table>
+          <thead>
+            <tr>
+              <th>Curso</th>
+              <th>Nivel</th>
+              <th>Duración</th>
+              <th>Precio</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr th:each="curso : ${cursosPopulares}">
+              <td><strong th:text="${curso.nombre}">Curso</strong></td>
+              <td th:text="${curso.nivel.nombre}">Nivel</td>
+              <td th:text="${curso.duracionSemanas} + ' sem'">12 sem</td>
+              <td th:text="'$' + ${curso.precio}">$0</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
-</body>
-</html> 
+  </body>
+</html>

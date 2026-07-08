@@ -32,8 +32,6 @@
         top: 0;
         bottom: 0;
       }
-
-      /* HEADER DEL SIDEBAR */
       .sidebar-header {
         text-align: center;
         margin-bottom: 30px;
@@ -62,7 +60,6 @@
         color: #a0c4e8;
         margin-top: 3px;
       }
-
       .sidebar a {
         display: block;
         color: #e2e8f0;
@@ -87,9 +84,10 @@
         padding: 30px;
         margin-left: 250px;
       }
+
       .header {
         background: white;
-        padding: 20px;
+        padding: 25px;
         border-radius: 15px;
         margin-bottom: 25px;
         box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
@@ -106,7 +104,7 @@
       }
       .card {
         background: white;
-        padding: 20px;
+        padding: 25px;
         border-radius: 15px;
         box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
         flex: 1;
@@ -119,23 +117,24 @@
         box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
       }
       .card i {
-        font-size: 2rem;
+        font-size: 2.5rem;
         margin-bottom: 10px;
       }
       .card h3 {
         color: #1a3a5c;
-        font-size: 2rem;
+        font-size: 2.5rem;
         margin: 10px 0;
       }
       .card p {
         color: #718096;
-        margin-top: 5px;
+        font-size: 0.95rem;
       }
 
       .section {
         background: white;
-        padding: 20px;
+        padding: 25px;
         border-radius: 15px;
+        margin-bottom: 25px;
         box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
       }
       h2 {
@@ -149,7 +148,7 @@
       }
       th,
       td {
-        padding: 12px;
+        padding: 14px;
         text-align: left;
         border-bottom: 1px solid #e2e8f0;
       }
@@ -180,26 +179,56 @@
         background: #fed7d7;
         color: #c53030;
       }
+      .badge-info {
+        background: #bee3f8;
+        color: #2a4365;
+      }
+
+      .btn-action {
+        background: linear-gradient(45deg, #667eea, #764ba2);
+        color: white;
+        border: none;
+        border-radius: 20px;
+        padding: 8px 18px;
+        transition: all 0.3s;
+        text-decoration: none;
+        display: inline-block;
+        font-size: 0.85rem;
+      }
+      .btn-action:hover {
+        transform: scale(1.05);
+        color: white;
+      }
+
+      .empty-state {
+        text-align: center;
+        padding: 40px;
+        color: #718096;
+      }
+      .empty-state i {
+        font-size: 3rem;
+        margin-bottom: 10px;
+      }
     </style>
   </head>
   <body>
     <div class="sidebar">
-      <!-- HEADER PROFESIONAL -->
       <div class="sidebar-header">
         <div class="sidebar-icon">🎓</div>
         <div class="sidebar-title">Profesor</div>
         <div class="sidebar-subtitle">Panel Académico</div>
       </div>
-
-      <a href="/" class="active"><i class="fas fa-home me-2"></i>Inicio</a>
-      <a href="/cursos"><i class="fas fa-book me-2"></i>Mis Cursos</a>
-      <a href="/materiales"><i class="fas fa-folder me-2"></i>Materiales</a>
+      <a href="/profesor/dashboard" class="active"
+        ><i class="fas fa-tachometer-alt me-2"></i>Dashboard</a
+      >
       <a href="/profesor/alumnos"
         ><i class="fas fa-users me-2"></i>Mis Alumnos</a
       >
       <a href="/profesor/calificaciones"
         ><i class="fas fa-star me-2"></i>Calificaciones</a
       >
+      <a href="/cursos"><i class="fas fa-book me-2"></i>Cursos</a>
+      <a href="/materiales"><i class="fas fa-folder me-2"></i>Materiales</a>
       <a href="/perfil"><i class="fas fa-user me-2"></i>Mi Perfil</a>
       <a href="/auth/logout"><i class="fas fa-sign-out-alt me-2"></i>Salir</a>
     </div>
@@ -207,70 +236,128 @@
     <div class="main">
       <div class="header">
         <h1><i class="fas fa-hand-wave me-2"></i>Bienvenido, Profesor</h1>
+        <p style="color: #718096; margin-top: 5px">
+          Panel de gestión académica
+        </p>
       </div>
 
+      <!-- ESTADÍSTICAS -->
       <div class="cards">
         <div class="card">
           <i class="fas fa-book-open" style="color: #4299e1"></i>
           <h3 th:text="${totalCursos}">0</h3>
-          <p>Cursos Activos</p>
+          <p>Cursos Disponibles</p>
         </div>
         <div class="card">
-          <i class="fas fa-calendar-check" style="color: #48bb78"></i>
-          <h3 th:text="${totalReservas}">0</h3>
-          <p>Mis Reservas</p>
+          <i class="fas fa-user-graduate" style="color: #48bb78"></i>
+          <h3
+            th:text="${totalAlumnosActivos != null ? totalAlumnosActivos : 0}"
+          >
+            0
+          </h3>
+          <p>Alumnos Activos</p>
         </div>
         <div class="card">
-          <i class="fas fa-chart-bar" style="color: #ed8936"></i>
-          <h3>92%</h3>
-          <p>Asistencia Promedio</p>
+          <i class="fas fa-star" style="color: #ed8936"></i>
+          <h3
+            th:text="${calificacionesPendientes != null ? calificacionesPendientes : 0}"
+          >
+            0
+          </h3>
+          <p>Calificaciones Pendientes</p>
         </div>
       </div>
 
+      <!-- ALUMNOS ACTIVOS -->
       <div class="section">
-        <h2><i class="fas fa-calendar-alt me-2"></i>Mis Reservas</h2>
+        <h2><i class="fas fa-users me-2"></i>Alumnos Activos</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Alumno</th>
+              <th>Curso</th>
+              <th>Horario</th>
+              <th>Estado</th>
+              <th>Promedio</th>
+              <th>Acción</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr th:each="inscripcion : ${inscripcionesActivas}">
+              <td>
+                <strong
+                  th:text="${inscripcion.usuario.nombre} + ' ' + ${inscripcion.usuario.apellido}"
+                ></strong>
+              </td>
+              <td th:text="${inscripcion.curso.nombre}"></td>
+              <td
+                th:text="${inscripcion.reserva.horario.diaSemana} + ' ' + ${inscripcion.reserva.horario.horaInicio} + ' - ' + ${inscripcion.reserva.horario.horaFin}"
+              ></td>
+              <td>
+                <span class="badge badge-success">Activo</span>
+              </td>
+              <td>
+                <th:block
+                  th:if="${mapaCalificaciones != null && mapaCalificaciones.containsKey(inscripcion.id)}"
+                >
+                  <span
+                    class="badge"
+                    th:classappend="${mapaCalificaciones[inscripcion.id].colorEstado == 'success' ? 'badge-success' : (mapaCalificaciones[inscripcion.id].colorEstado == 'warning' ? 'badge-warning' : 'badge-danger')}"
+                    th:text="${mapaCalificaciones[inscripcion.id].promedio}"
+                  ></span>
+                </th:block>
+                <th:block
+                  th:unless="${mapaCalificaciones != null && mapaCalificaciones.containsKey(inscripcion.id)}"
+                >
+                  <span class="badge badge-info">Sin notas</span>
+                </th:block>
+              </td>
+              <td>
+                <a
+                  th:href="@{/profesor/calificar/{id}(id=${inscripcion.id})}"
+                  class="btn-action"
+                >
+                  <i class="fas fa-edit me-1"></i>Calificar
+                </a>
+              </td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(inscripcionesActivas)}">
+              <td colspan="6">
+                <div class="empty-state">
+                  <i class="fas fa-users"></i>
+                  <p>No hay alumnos activos en este momento.</p>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- PRÓXIMAS CLASES -->
+      <div class="section">
+        <h2><i class="fas fa-calendar-alt me-2"></i>Próximas Clases</h2>
         <table>
           <thead>
             <tr>
               <th>Curso</th>
               <th>Día</th>
               <th>Horario</th>
-              <th>Estado</th>
+              <th>Alumnos Inscritos</th>
             </tr>
           </thead>
           <tbody>
-            <tr th:each="reserva : ${reservas}">
-              <td th:text="${reserva.horario.curso.nombre}">Curso</td>
-              <td th:text="${reserva.horario.diaSemana}">Día</td>
-              <td
-                th:text="${reserva.horario.horaInicio} + ' - ' + ${reserva.horario.horaFin}"
-              >
-                Horario
-              </td>
-              <td>
-                <span
-                  th:if="${reserva.estado == 'CONFIRMADA'}"
-                  class="badge badge-success"
-                  >Activo</span
-                >
-                <span
-                  th:if="${reserva.estado == 'PENDIENTE'}"
-                  class="badge badge-warning"
-                  >Pendiente</span
-                >
-                <span
-                  th:if="${reserva.estado == 'CANCELADA'}"
-                  class="badge badge-danger"
-                  >Cancelada</span
-                >
-              </td>
+            <tr th:each="curso : ${cursosActivos}">
+              <td th:text="${curso.nombre}"></td>
+              <td>--</td>
+              <td>--</td>
+              <td>--</td>
             </tr>
-            <tr th:if="${#lists.isEmpty(reservas)}">
-              <td
-                colspan="4"
-                style="text-align: center; padding: 30px; color: #718096"
-              >
-                <i class="fas fa-info-circle me-2"></i>No tienes reservas aún.
+            <tr th:if="${#lists.isEmpty(cursosActivos)}">
+              <td colspan="4">
+                <div class="empty-state">
+                  <i class="fas fa-calendar-alt"></i>
+                  <p>No hay cursos con horarios asignados.</p>
+                </div>
               </td>
             </tr>
           </tbody>

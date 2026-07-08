@@ -1,49 +1,271 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Horarios - Academia San Luis</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+    />
     <style>
-        *{margin:0;padding:0;box-sizing:border-box;}
-        body{font-family:'Segoe UI',sans-serif;background:#f7fafc;display:flex;}
-        .sidebar{width:250px;background:#1a3a5c;min-height:100vh;padding:20px;color:white;}
-        .sidebar h2{font-size:1.2rem;margin-bottom:25px;}
-        .sidebar a{display:block;color:#e2e8f0;text-decoration:none;padding:10px;margin:5px 0;border-radius:6px;}
-        .sidebar a:hover{background:#2c5282;}
-        .main{flex:1;padding:30px;}
-        .header{background:white;padding:20px;border-radius:10px;margin-bottom:25px;}
-        h1{color:#1a3a5c;}
-        .card{background:white;padding:20px;border-radius:10px;margin:10px 0;border-left:4px solid #3182ce;display:flex;justify-content:space-between;align-items:center;box-shadow:0 1px 3px rgba(0,0,0,0.1);}
-        .btn-reservar{background:#38a169;color:white;padding:8px 16px;border-radius:6px;text-decoration:none;font-weight:600;}
-        .btn-reservar:hover{background:#2f855a;}
-        .btn-volver{background:#718096;color:white;padding:8px 16px;border-radius:6px;text-decoration:none;margin-bottom:20px;display:inline-block;}
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        font-family: "Segoe UI", sans-serif;
+        background: #f7fafc;
+        display: flex;
+      }
+
+      /* SIDEBAR CON EFECTO HOVER */
+      .sidebar {
+        width: 250px;
+        background: linear-gradient(180deg, #1a3a5c 0%, #2c5282 100%);
+        min-height: 100vh;
+        padding: 20px;
+        color: white;
+        position: fixed;
+        left: 0;
+        top: 0;
+        bottom: 0;
+      }
+      .sidebar h2 {
+        font-size: 1.3rem;
+        margin-bottom: 25px;
+        padding-bottom: 15px;
+        border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+      }
+      .sidebar a {
+        display: block;
+        color: #e2e8f0;
+        text-decoration: none;
+        padding: 12px 15px;
+        margin: 5px 0;
+        border-radius: 8px;
+        transition: all 0.3s;
+      }
+      .sidebar a:hover {
+        background: rgba(255, 255, 255, 0.15);
+        color: white;
+        transform: translateX(5px);
+      }
+
+      .main {
+        flex: 1;
+        padding: 30px;
+        margin-left: 250px;
+      }
+
+      .header {
+        background: white;
+        padding: 25px;
+        border-radius: 15px;
+        margin-bottom: 25px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+      }
+      h1 {
+        color: #1a3a5c;
+        margin-bottom: 5px;
+      }
+      .subtitle {
+        color: #718096;
+        font-size: 0.95rem;
+      }
+
+      .card {
+        background: white;
+        padding: 20px 25px;
+        border-radius: 12px;
+        margin: 12px 0;
+        border-left: 4px solid #3182ce;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+        transition: all 0.3s;
+      }
+      .card:hover {
+        transform: translateX(5px);
+        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+      }
+
+      .btn-reservar {
+        background: linear-gradient(135deg, #38a169, #68d391);
+        color: white;
+        padding: 10px 22px;
+        border-radius: 25px;
+        text-decoration: none;
+        font-weight: 600;
+        transition: all 0.3s;
+      }
+      .btn-reservar:hover {
+        transform: scale(1.05);
+        box-shadow: 0 5px 15px rgba(56, 161, 105, 0.4);
+      }
+
+      .btn-volver {
+        background: #718096;
+        color: white;
+        padding: 10px 20px;
+        border-radius: 25px;
+        text-decoration: none;
+        margin-bottom: 20px;
+        display: inline-block;
+        transition: all 0.3s;
+      }
+      .btn-volver:hover {
+        background: #4a5568;
+        transform: scale(1.05);
+      }
+
+      .alert-info-custom {
+        background: #fff3cd;
+        border: 1px solid #ffc107;
+        color: #856404;
+        padding: 12px 20px;
+        border-radius: 10px;
+        margin-bottom: 20px;
+        text-align: center;
+      }
+
+      .btn-ver {
+        background: linear-gradient(135deg, #805ad5, #b794f4);
+        color: white;
+        padding: 10px 22px;
+        border-radius: 25px;
+        text-decoration: none;
+        font-weight: 600;
+        transition: all 0.3s;
+      }
+      .btn-ver:hover {
+        transform: scale(1.05);
+        box-shadow: 0 5px 15px rgba(128, 90, 213, 0.4);
+      }
+
+      .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        color: #718096;
+      }
+      .empty-state i {
+        font-size: 4rem;
+        margin-bottom: 15px;
+        color: #cbd5e0;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <div class="sidebar">
-        <h2>🎓 San Luis</h2>
-        <a href="/">🏠 Inicio</a>
-        <a href="/cursos">📚 Cursos</a>
-        <a href="/reservas">📅 Mis Reservas</a>
-        <a href="/auth/logout">🚪 Salir</a>
+      <h2><i class="fas fa-graduation-cap me-2"></i>San Luis</h2>
+      <a href="/"><i class="fas fa-home me-2"></i>Inicio</a>
+      <a href="/cursos"><i class="fas fa-book me-2"></i>Cursos</a>
+      <a href="/reservas"
+        ><i class="fas fa-calendar-alt me-2"></i>Mis Reservas</a
+      >
+      <a href="/perfil"><i class="fas fa-user me-2"></i>Mi Perfil</a>
+      <a href="/auth/logout"><i class="fas fa-sign-out-alt me-2"></i>Salir</a>
     </div>
+
     <div class="main">
-        <a href="/cursos" class="btn-volver">← Volver a Cursos</a>
-        <div class="header">
-            <h1 th:text="'Horarios: ' + ${curso.nombre}">Horarios del Curso</h1>
+      <a href="/cursos" class="btn-volver"
+        ><i class="fas fa-arrow-left me-2"></i>Volver a Cursos</a
+      >
+
+      <div class="header">
+        <h1>
+          <i class="fas fa-clock me-2"></i
+          ><span th:text="'Horarios: ' + ${curso.nombre}"
+            >Horarios del Curso</span
+          >
+        </h1>
+        <p class="subtitle">Selecciona un horario disponible para este curso</p>
+      </div>
+
+      <!-- MENSAJE PARA PROFESOR O PADRE -->
+      <div
+        th:if="${session.rolUsuario != null && (session.rolUsuario.contains('PROFESOR') || session.rolUsuario.contains('PADRE'))}"
+        class="alert-info-custom"
+      >
+        <i class="fas fa-info-circle me-2"></i>
+        <strong>Modo consulta:</strong> Estás viendo los horarios como
+        <span th:if="${session.rolUsuario.contains('PROFESOR')}">Profesor</span>
+        <span th:if="${session.rolUsuario.contains('PADRE')}">Padre</span>. Solo
+        los alumnos pueden reservar.
+      </div>
+
+      <!-- SIN HORARIOS -->
+      <div th:if="${#lists.isEmpty(horarios)}" class="empty-state">
+        <i class="fas fa-clock"></i>
+        <h3>No hay horarios disponibles</h3>
+        <p>Este curso aún no tiene horarios asignados.</p>
+      </div>
+
+      <!-- LISTA DE HORARIOS -->
+      <div th:each="horario : ${horarios}" class="card">
+        <div>
+          <strong style="font-size: 1.1rem" th:text="${horario.diaSemana}"
+            >Día</strong
+          ><br />
+          <span
+            style="color: #4a5568"
+            th:text="${horario.horaInicio} + ' - ' + ${horario.horaFin}"
+            >Horario</span
+          ><br />
+          <small style="color: #718096">
+            <i class="fas fa-users me-1"></i>Cupos:
+            <span th:text="${horario.cupoMaximo}">0</span>
+          </small>
         </div>
-        <div th:if="${#lists.isEmpty(horarios)}" style="text-align:center;padding:40px;">
-            <p>No hay horarios disponibles para este curso.</p>
-        </div>
-        <div th:each="horario : ${horarios}" class="card">
-            <div>
-                <strong th:text="${horario.diaSemana}">Día</strong><br>
-                <span th:text="${horario.horaInicio} + ' - ' + ${horario.horaFin}">Horario</span><br>
-                <small>Cupos: <span th:text="${horario.cupoMaximo}">0</span></small>
-            </div>
-            <a th:href="@{/reservas/crear/{id}(id=${horario.id})}" class="btn-reservar">📅 Reservar</a>
-        </div>
+
+        <!-- SOLO ALUMNOS VEN EL BOTÓN RESERVAR -->
+        <th:block
+          th:if="${session.rolUsuario != null && session.rolUsuario.contains('ALUMNO')}"
+        >
+          <a
+            th:href="@{/reservas/crear/{id}(id=${horario.id})}"
+            class="btn-reservar"
+          >
+            <i class="fas fa-calendar-plus me-1"></i>Reservar
+          </a>
+        </th:block>
+
+        <!-- PROFESOR: Solo ve información -->
+        <th:block
+          th:if="${session.rolUsuario != null && session.rolUsuario.contains('PROFESOR')}"
+        >
+          <span class="btn-ver">
+            <i class="fas fa-eye me-1"></i>Solo consulta
+          </span>
+        </th:block>
+
+        <!-- PADRE: Solo ve información -->
+        <th:block
+          th:if="${session.rolUsuario != null && session.rolUsuario.contains('PADRE')}"
+        >
+          <span class="btn-ver">
+            <i class="fas fa-eye me-1"></i>Solo consulta
+          </span>
+        </th:block>
+
+        <!-- VISITANTE (sin sesión): Botón para iniciar sesión -->
+        <th:block th:if="${session.usuarioEmail == null}">
+          <a
+            href="/auth/login"
+            class="btn-reservar"
+            style="background: linear-gradient(135deg, #3182ce, #63b3ed)"
+          >
+            <i class="fas fa-sign-in-alt me-1"></i>Iniciar Sesión para Reservar
+          </a>
+        </th:block>
+
+        <!-- ADMIN: Puede gestionar -->
+        <th:block th:if="${session.usuarioEmail == 'admin@test.com'}">
+          <span style="color: #718096">Administrador</span>
+        </th:block>
+      </div>
     </div>
-</body>
-</html> 
+  </body>
+</html>

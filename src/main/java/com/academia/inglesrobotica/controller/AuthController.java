@@ -128,6 +128,7 @@ public class AuthController {
         if (usuario != null && passwordEncoder.matches(password, usuario.getPassword())) {
             session.setAttribute("usuarioEmail", usuario.getEmail());
             session.setAttribute("usuarioId", usuario.getId());
+            session.setAttribute("rolUsuario", usuario.getRol().getNombre()); // ← NUEVA LÍNEA
 
             String rol = usuario.getRol().getNombre();
             if (rol.contains("ADMIN"))

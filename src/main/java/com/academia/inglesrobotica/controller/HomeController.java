@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.academia.inglesrobotica.model.Calificacion;
+import com.academia.inglesrobotica.model.Curso;
 import com.academia.inglesrobotica.model.Inscripcion;
 import com.academia.inglesrobotica.model.Pago;
 import com.academia.inglesrobotica.model.Reserva;
@@ -26,6 +27,7 @@ import com.academia.inglesrobotica.service.CalificacionService;
 import com.academia.inglesrobotica.service.CursoService;
 import com.academia.inglesrobotica.service.InscripcionService;
 import com.academia.inglesrobotica.service.PagoService;
+import com.academia.inglesrobotica.service.ProfesorCursoService;
 import com.academia.inglesrobotica.service.ReservaService;
 import com.academia.inglesrobotica.service.UsuarioService;
 
@@ -51,6 +53,9 @@ public class HomeController {
 
     @Autowired
     private UsuarioService usuarioService;
+
+    @Autowired
+    private ProfesorCursoService profesorCursoService;
 
     @GetMapping("/")
     public String index() {
@@ -219,29 +224,54 @@ public class HomeController {
 
     @GetMapping("/profesor/dashboard")
     public String profesorDashboard(Model model, HttpSession session) {
-        model.addAttribute("totalCursos", cursoService.findActivos().size());
-
         Long usuarioId = (Long) session.getAttribute("usuarioId");
-        List<Reserva> reservas = new ArrayList<>();
-        if (usuarioId != null) {
-            reservas = reservaService.findByUsuarioId(usuarioId);
+        if (usuarioId == null) {
+            return "redirect:/auth/login";
         }
 
-        long pendientes = 0;
-        long confirmadas = 0;
-        for (Reserva r : reservas) {
-            if ("PENDIENTE".equals(r.getEstado()))
-                pendientes++;
-            if ("CONFIRMADA".equals(r.getEstado()))
-                confirmadas++;
+        // Cursos asignados al profesor
+        List<Curso> cursosAsignados = profesorCursoService.findCursosByProfesorId(usuarioId);
+        List<Long> cursoIds = profesorCursoService.findCursoIdsByProfesorId(usuarioId);
+
+        model.addAttribute("totalCursos", cursosAsignados.size());
+        model.addAttribute("cursosAsignados", cursosAsignados);
+
+        // Alumnos activos SOLO de los cursos del profesor
+        List<Inscripcion> inscripcionesActivas = inscripcionService.findByEstado("ACTIVA");
+        List<Inscripcion> misAlumnos = new ArrayList<>();
+
+        for (Inscripcion ins : inscripcionesActivas) {
+            if (cursoIds.contains(ins.getCurso().getId())) {
+                misAlumnos.add(ins);
+            }
         }
 
-        model.addAttribute("totalReservas", reservas.size());
-        model.addAttribute("pendientes", pendientes);
-        model.addAttribute("confirmadas", confirmadas);
-        model.addAttribute("pendientesAttr", pendientes);
-        model.addAttribute("confirmadasAttr", confirmadas);
-        model.addAttribute("reservas", reservas);
+        model.addAttribute("inscripcionesActivas", misAlumnos);
+        model.addAttribute("totalAlumnosActivos", misAlumnos.size());
+
+        // Mapa de calificaciones
+        Map<Long, Calificacion> mapaCalificaciones = new HashMap<>();
+        long calificacionesPendientes = 0;
+
+        for (Inscripcion ins : misAlumnos) {
+            Optional<Calificacion> calOpt = calificacionService.findByInscripcionId(ins.getId());
+            if (calOpt.isPresent()) {
+                mapaCalificaciones.put(ins.getId(), calOpt.get());
+            } else {
+                calificacionesPendientes++;
+            }
+        }
+
+        model.addAttribute("mapaCalificaciones", mapaCalificaciones);
+        model.addAttribute("calificacionesPendientes", calificacionesPendientes);
+
+        // Agrupar alumnos por curso
+        Map<String, List<Inscripcion>> alumnosPorCurso = new HashMap<>();
+        for (Inscripcion ins : misAlumnos) {
+            String cursoNombre = ins.getCurso().getNombre();
+            alumnosPorCurso.computeIfAbsent(cursoNombre, k -> new ArrayList<>()).add(ins);
+        }
+        model.addAttribute("alumnosPorCurso", alumnosPorCurso);
 
         return "profesor/dashboard";
     }
@@ -253,14 +283,35 @@ public class HomeController {
             return "redirect:/auth/login";
         }
 
+        // Solo cursos del profesor
+        List<Long> cursoIds = profesorCursoService.findCursoIdsByProfesorId(usuarioId);
+
         List<Inscripcion> inscripcionesActivas = inscripcionService.findByEstado("ACTIVA");
         List<Inscripcion> inscripcionesPendientes = inscripcionService.findByEstado("PENDIENTE_PAGO");
         List<Inscripcion> inscripcionesVerificacion = inscripcionService.findByEstado("PAGO_VERIFICACION");
 
-        model.addAttribute("inscripcionesActivas", inscripcionesActivas);
-        model.addAttribute("inscripcionesPendientes", inscripcionesPendientes);
-        model.addAttribute("inscripcionesVerificacion", inscripcionesVerificacion);
-        model.addAttribute("totalAlumnos", inscripcionesActivas.size());
+        // Filtrar por cursos del profesor
+        List<Inscripcion> misActivas = new ArrayList<>();
+        List<Inscripcion> misPendientes = new ArrayList<>();
+        List<Inscripcion> misVerificacion = new ArrayList<>();
+
+        for (Inscripcion ins : inscripcionesActivas) {
+            if (cursoIds.contains(ins.getCurso().getId()))
+                misActivas.add(ins);
+        }
+        for (Inscripcion ins : inscripcionesPendientes) {
+            if (cursoIds.contains(ins.getCurso().getId()))
+                misPendientes.add(ins);
+        }
+        for (Inscripcion ins : inscripcionesVerificacion) {
+            if (cursoIds.contains(ins.getCurso().getId()))
+                misVerificacion.add(ins);
+        }
+
+        model.addAttribute("inscripcionesActivas", misActivas);
+        model.addAttribute("inscripcionesPendientes", misPendientes);
+        model.addAttribute("inscripcionesVerificacion", misVerificacion);
+        model.addAttribute("totalAlumnos", misActivas.size());
 
         return "profesor/alumnos";
     }
@@ -292,17 +343,34 @@ public class HomeController {
             return "redirect:/auth/login";
         }
 
+        // Solo cursos del profesor
+        List<Long> cursoIds = profesorCursoService.findCursoIdsByProfesorId(usuarioId);
+
         List<Inscripcion> inscripcionesActivas = inscripcionService.findByEstado("ACTIVA");
+        List<Inscripcion> misAlumnos = new ArrayList<>();
+
+        for (Inscripcion ins : inscripcionesActivas) {
+            if (cursoIds.contains(ins.getCurso().getId())) {
+                misAlumnos.add(ins);
+            }
+        }
 
         Map<Long, Calificacion> mapaCalificaciones = new HashMap<>();
-        for (Inscripcion ins : inscripcionesActivas) {
+        for (Inscripcion ins : misAlumnos) {
             calificacionService.findByInscripcionId(ins.getId())
                     .ifPresent(cal -> mapaCalificaciones.put(ins.getId(), cal));
         }
 
-        model.addAttribute("inscripcionesActivas", inscripcionesActivas);
+        // Agrupar por curso
+        Map<String, List<Inscripcion>> alumnosPorCurso = new HashMap<>();
+        for (Inscripcion ins : misAlumnos) {
+            String cursoNombre = ins.getCurso().getNombre();
+            alumnosPorCurso.computeIfAbsent(cursoNombre, k -> new ArrayList<>()).add(ins);
+        }
+
+        model.addAttribute("alumnosPorCurso", alumnosPorCurso);
         model.addAttribute("mapaCalificaciones", mapaCalificaciones);
-        model.addAttribute("cursos", cursoService.findActivos());
+        model.addAttribute("cursos", profesorCursoService.findCursosByProfesorId(usuarioId));
 
         return "profesor/calificaciones";
     }

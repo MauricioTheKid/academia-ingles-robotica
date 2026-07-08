@@ -1,68 +1,432 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Calificaciones - Admin</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+    />
     <style>
-        *{margin:0;padding:0;box-sizing:border-box;}
-        body{font-family:'Segoe UI',sans-serif;background:#f7fafc;display:flex;}
-        .sidebar{width:250px;background:#1a202c;min-height:100vh;padding:20px;color:white;}
-        .sidebar h2{font-size:1.2rem;margin-bottom:25px;}
-        .sidebar a{display:block;color:#e2e8f0;text-decoration:none;padding:10px;margin:5px 0;border-radius:6px;}
-        .sidebar a:hover{background:#2d3748;}
-        .sidebar a.active{background:#2d3748;font-weight:bold;}
-        .main{flex:1;padding:30px;}
-        .cards{display:flex;gap:20px;flex-wrap:wrap;margin-bottom:25px;}
-        .card{background:white;padding:20px;border-radius:10px;box-shadow:0 2px 10px rgba(0,0,0,0.1);flex:1;min-width:200px;text-align:center;}
-        .section{background:white;padding:20px;border-radius:10px;}
-        table{width:100%;border-collapse:collapse;}
-        th,td{padding:12px;text-align:left;border-bottom:1px solid #e2e8f0;}
-        th{background:#edf2f7;}
-        .badge{padding:4px 10px;border-radius:20px;font-size:0.8rem;}
-    </style>
-</head>
-<body>
-    <div class="sidebar">
-        <h2>⚙️ Admin Panel</h2>
-        <a href="/admin/dashboard">📊 Dashboard</a>
-        <a href="/admin/usuarios">👥 Usuarios</a>
-        <a href="/cursos">📚 Cursos</a>
-        <a href="/horarios">🕐 Horarios</a>
-        <a href="/admin/inscripciones">📋 Inscripciones</a>
-        <a href="/admin/calificaciones" class="active">⭐ Calificaciones</a>
-        <a href="/admin/reportes">📈 Reportes</a>
-        <a href="/auth/logout">🚪 Salir</a>
-    </div>
-    <div class="main">
-        <h1>⭐ Calificaciones de Alumnos</h1>
-        
-        <div class="cards">
-            <div class="card"><h3 th:text="${#lists.size(calificaciones)}">0</h3><p>Total Calificaciones</p></div>
-            <div class="card"><h3 th:text="${totalAprobados}">0</h3><p>Aprobados</p></div>
-            <div class="card"><h3 th:text="${totalReprobados}">0</h3><p>Reprobados</p></div>
-        </div>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        font-family: "Segoe UI", sans-serif;
+        background: #f7fafc;
+        display: flex;
+      }
 
-        <div class="section">
-            <table>
-                <thead><tr><th>Alumno</th><th>Curso</th><th>P1</th><th>P2</th><th>P3</th><th>P4</th><th>Proy</th><th>E.F</th><th>Prom</th><th>Estado</th></tr></thead>
-                <tbody>
-                    <tr th:each="cal : ${calificaciones}">
-                        <td th:text="${cal.inscripcion.usuario.nombre} + ' ' + ${cal.inscripcion.usuario.apellido}"></td>
-                        <td th:text="${cal.inscripcion.curso.nombre}"></td>
-                        <td th:text="${cal.notaParcial1}">-</td>
-                        <td th:text="${cal.notaParcial2}">-</td>
-                        <td th:text="${cal.notaParcial3}">-</td>
-                        <td th:text="${cal.notaParcial4}">-</td>
-                        <td th:text="${cal.notaProyecto}">-</td>
-                        <td th:text="${cal.notaExamenFinal}">-</td>
-                        <td><strong th:text="${cal.promedio}"></strong></td>
-                        <td><span class="badge" th:classappend="'bg-' + ${cal.colorEstado}" th:text="${cal.estado}"></span></td>
-                    </tr>
-                    <tr th:if="${#lists.isEmpty(calificaciones)}"><td colspan="10" style="text-align:center;">No hay calificaciones registradas.</td></tr>
-                </tbody>
-            </table>
-        </div>
+      .sidebar {
+        width: 250px;
+        background: linear-gradient(
+          180deg,
+          #1a1a2e 0%,
+          #16213e 50%,
+          #0f3460 100%
+        );
+        min-height: 100vh;
+        padding: 20px;
+        color: white;
+        position: fixed;
+        left: 0;
+        top: 0;
+        bottom: 0;
+      }
+      .sidebar-header {
+        text-align: center;
+        margin-bottom: 30px;
+        padding-bottom: 20px;
+        border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+      }
+      .sidebar-icon {
+        width: 65px;
+        height: 65px;
+        background: linear-gradient(135deg, #e94560, #c23152);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 12px;
+        font-size: 2rem;
+        box-shadow: 0 5px 20px rgba(233, 69, 96, 0.4);
+      }
+      .sidebar-title {
+        font-size: 1.2rem;
+        font-weight: bold;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        background: linear-gradient(135deg, #e94560, #ff6b6b);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+      .sidebar-subtitle {
+        font-size: 0.7rem;
+        color: #a0a0b8;
+        margin-top: 4px;
+        letter-spacing: 1px;
+      }
+      .sidebar a {
+        display: block;
+        color: #e2e8f0;
+        text-decoration: none;
+        padding: 12px 15px;
+        margin: 5px 0;
+        border-radius: 8px;
+        transition: all 0.3s;
+      }
+      .sidebar a:hover {
+        background: rgba(255, 255, 255, 0.1);
+        color: white;
+        transform: translateX(5px);
+      }
+      .sidebar a.active {
+        background: rgba(233, 69, 96, 0.3);
+        font-weight: bold;
+        border-left: 3px solid #e94560;
+      }
+
+      .main {
+        flex: 1;
+        padding: 30px;
+        margin-left: 250px;
+      }
+      .header {
+        background: white;
+        padding: 25px;
+        border-radius: 15px;
+        margin-bottom: 25px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+      }
+      h1 {
+        color: #1a1a2e;
+      }
+
+      .stats {
+        display: flex;
+        gap: 20px;
+        flex-wrap: wrap;
+        margin-bottom: 30px;
+      }
+      .stat-card {
+        background: white;
+        padding: 25px;
+        border-radius: 15px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        flex: 1;
+        min-width: 180px;
+        text-align: center;
+        transition: all 0.3s;
+        position: relative;
+        overflow: hidden;
+      }
+      .stat-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.1);
+      }
+      .stat-card::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+      }
+      .stat-card:nth-child(1)::before {
+        background: linear-gradient(90deg, #805ad5, #b794f4);
+      }
+      .stat-card:nth-child(2)::before {
+        background: linear-gradient(90deg, #38a169, #68d391);
+      }
+      .stat-card:nth-child(3)::before {
+        background: linear-gradient(90deg, #e53e3e, #fc8181);
+      }
+      .stat-card i {
+        font-size: 2.5rem;
+        margin-bottom: 10px;
+      }
+      .stat-card h3 {
+        font-size: 2.5rem;
+        margin: 10px 0;
+        font-weight: 800;
+      }
+      .stat-card p {
+        color: #718096;
+        font-size: 0.95rem;
+        font-weight: 600;
+      }
+
+      .curso-section {
+        background: white;
+        border-radius: 15px;
+        margin-bottom: 30px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+        overflow: hidden;
+      }
+      .curso-header {
+        background: linear-gradient(135deg, #1a1a2e, #0f3460);
+        color: white;
+        padding: 18px 25px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .curso-header h5 {
+        margin: 0;
+        font-size: 1.2rem;
+        font-weight: 700;
+      }
+      .curso-badge {
+        background: rgba(255, 255, 255, 0.2);
+        padding: 6px 18px;
+        border-radius: 25px;
+        font-size: 0.9rem;
+        font-weight: 600;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      th,
+      td {
+        padding: 14px 15px;
+        text-align: center;
+        border-bottom: 1px solid #e2e8f0;
+        font-size: 0.9rem;
+      }
+      th {
+        background: #f7fafc;
+        color: #1a1a2e;
+        font-weight: 700;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+      td:first-child {
+        text-align: left;
+        font-weight: 600;
+      }
+      tbody tr {
+        transition: all 0.3s;
+      }
+      tbody tr:hover {
+        background: #f0f4ff;
+        transform: scale(1.01);
+      }
+
+      .badge {
+        padding: 6px 14px;
+        border-radius: 25px;
+        font-size: 0.8rem;
+        font-weight: 700;
+        display: inline-block;
+      }
+      .badge-success {
+        background: #c6f6d5;
+        color: #276749;
+      }
+      .badge-warning {
+        background: #fefcbf;
+        color: #975a16;
+      }
+      .badge-danger {
+        background: #fed7d7;
+        color: #9b2c2c;
+      }
+
+      .promedio-badge {
+        font-size: 1.1rem;
+        font-weight: 800;
+        padding: 8px 16px;
+        border-radius: 25px;
+        display: inline-block;
+        min-width: 50px;
+      }
+      .promedio-success {
+        background: #d4edda;
+        color: #155724;
+        border: 2px solid #28a745;
+      }
+      .promedio-warning {
+        background: #fff3cd;
+        color: #856404;
+        border: 2px solid #ffc107;
+      }
+      .promedio-danger {
+        background: #f8d7da;
+        color: #721c24;
+        border: 2px solid #dc3545;
+      }
+
+      .nota-cell {
+        font-weight: 600;
+        color: #4a5568;
+      }
+
+      .empty-state {
+        text-align: center;
+        padding: 60px;
+        color: #718096;
+      }
+      .empty-state i {
+        font-size: 5rem;
+        margin-bottom: 15px;
+        color: #cbd5e0;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-icon">🛡️</div>
+        <div class="sidebar-title">Admin Panel</div>
+        <div class="sidebar-subtitle">Control Total</div>
+      </div>
+      <a href="/admin/dashboard"
+        ><i class="fas fa-tachometer-alt me-2"></i>Dashboard</a
+      >
+      <a href="/admin/usuarios"><i class="fas fa-users me-2"></i>Usuarios</a>
+      <a href="/cursos"><i class="fas fa-book me-2"></i>Cursos</a>
+      <a href="/horarios"><i class="fas fa-clock me-2"></i>Horarios</a>
+      <a href="/materiales"><i class="fas fa-folder me-2"></i>Materiales</a>
+      <a href="/admin/inscripciones"
+        ><i class="fas fa-file-alt me-2"></i>Inscripciones</a
+      >
+      <a href="/admin/calificaciones" class="active"
+        ><i class="fas fa-star me-2"></i>Calificaciones</a
+      >
+      <a href="/admin/reportes"
+        ><i class="fas fa-chart-bar me-2"></i>Reportes</a
+      >
+      <a href="/perfil"><i class="fas fa-user me-2"></i>Mi Perfil</a>
+      <a href="/auth/logout"
+        ><i class="fas fa-sign-out-alt me-2"></i>Cerrar Sesión</a
+      >
     </div>
-</body>
+
+    <div class="main">
+      <div class="header">
+        <h1><i class="fas fa-star me-2"></i>Calificaciones de Alumnos</h1>
+        <p style="color: #718096; margin-top: 5px">
+          Rendimiento académico por curso
+        </p>
+      </div>
+
+      <!-- ESTADÍSTICAS -->
+      <div class="stats">
+        <div class="stat-card">
+          <i class="fas fa-clipboard-list" style="color: #805ad5"></i>
+          <h3 style="color: #805ad5" th:text="${totalCalificaciones}">0</h3>
+          <p>Total Calificaciones</p>
+        </div>
+        <div class="stat-card">
+          <i class="fas fa-check-circle" style="color: #38a169"></i>
+          <h3 style="color: #38a169" th:text="${totalAprobados}">0</h3>
+          <p>Aprobados</p>
+        </div>
+        <div class="stat-card">
+          <i class="fas fa-times-circle" style="color: #e53e3e"></i>
+          <h3 style="color: #e53e3e" th:text="${totalReprobados}">0</h3>
+          <p>Reprobados</p>
+        </div>
+      </div>
+
+      <!-- CALIFICACIONES AGRUPADAS POR CURSO -->
+      <div th:each="entry : ${calificacionesPorCurso}" class="curso-section">
+        <div class="curso-header">
+          <h5>
+            <i class="fas fa-book me-2"></i><span th:text="${entry.key}"></span>
+          </h5>
+          <span
+            class="curso-badge"
+            th:text="${entry.value.size() + ' alumno(s)'}"
+          ></span>
+        </div>
+        <div style="padding: 10px 0">
+          <table>
+            <thead>
+              <tr>
+                <th style="text-align: left; padding-left: 25px">Alumno</th>
+                <th>P1</th>
+                <th>P2</th>
+                <th>P3</th>
+                <th>P4</th>
+                <th>Proy</th>
+                <th>E.F</th>
+                <th>Promedio</th>
+                <th>Estado</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr th:each="cal : ${entry.value}">
+                <td style="text-align: left; padding-left: 25px">
+                  <strong
+                    th:text="${cal.inscripcion.usuario.nombre} + ' ' + ${cal.inscripcion.usuario.apellido}"
+                  ></strong>
+                </td>
+                <td
+                  class="nota-cell"
+                  th:text="${cal.notaParcial1 != null ? cal.notaParcial1 : '-'}"
+                ></td>
+                <td
+                  class="nota-cell"
+                  th:text="${cal.notaParcial2 != null ? cal.notaParcial2 : '-'}"
+                ></td>
+                <td
+                  class="nota-cell"
+                  th:text="${cal.notaParcial3 != null ? cal.notaParcial3 : '-'}"
+                ></td>
+                <td
+                  class="nota-cell"
+                  th:text="${cal.notaParcial4 != null ? cal.notaParcial4 : '-'}"
+                ></td>
+                <td
+                  class="nota-cell"
+                  th:text="${cal.notaProyecto != null ? cal.notaProyecto : '-'}"
+                ></td>
+                <td
+                  class="nota-cell"
+                  th:text="${cal.notaExamenFinal != null ? cal.notaExamenFinal : '-'}"
+                ></td>
+                <td>
+                  <span
+                    class="promedio-badge"
+                    th:classappend="${cal.colorEstado == 'success' ? 'promedio-success' : (cal.colorEstado == 'warning' ? 'promedio-warning' : 'promedio-danger')}"
+                    th:text="${cal.promedio}"
+                  ></span>
+                </td>
+                <td>
+                  <span
+                    class="badge"
+                    th:classappend="${cal.colorEstado == 'success' ? 'badge-success' : (cal.colorEstado == 'warning' ? 'badge-warning' : 'badge-danger')}"
+                    th:text="${cal.estado}"
+                  ></span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- SIN CALIFICACIONES -->
+      <div
+        th:if="${#maps.isEmpty(calificacionesPorCurso)}"
+        class="curso-section"
+      >
+        <div class="empty-state">
+          <i class="fas fa-star"></i>
+          <h3>No hay calificaciones registradas</h3>
+          <p>
+            Las calificaciones aparecerán aquí cuando los profesores las
+            registren.
+          </p>
+        </div>
+      </div>
+    </div>
+  </body>
 </html>

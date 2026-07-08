@@ -1,106 +1,451 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Gestión de Inscripciones - Admin</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+    />
     <style>
-        *{margin:0;padding:0;box-sizing:border-box;}
-        body{font-family:'Segoe UI',sans-serif;background:#f7fafc;display:flex;}
-        .sidebar{width:250px;background:#1a3a5c;min-height:100vh;padding:20px;color:white;}
-        .sidebar h2{font-size:1.2rem;margin-bottom:25px;}
-        .sidebar a{display:block;color:#e2e8f0;text-decoration:none;padding:10px;margin:5px 0;border-radius:6px;}
-        .sidebar a:hover{background:#2c5282;}
-        .main{flex:1;padding:30px;}
-        .header{background:white;padding:20px;border-radius:10px;margin-bottom:25px;}
-        .stats{display:flex;gap:20px;flex-wrap:wrap;margin-bottom:25px;}
-        .stat-card{background:white;padding:20px;border-radius:10px;box-shadow:0 2px 10px rgba(0,0,0,0.1);flex:1;min-width:150px;text-align:center;}
-        .stat-card h3{font-size:2rem;}
-        .stat-card p{color:#718096;}
-        table{width:100%;border-collapse:collapse;background:white;border-radius:10px;overflow:hidden;}
-        th,td{padding:12px;text-align:left;border-bottom:1px solid #e2e8f0;}
-        th{background:#edf2f7;}
-        .badge{padding:4px 10px;border-radius:20px;font-size:0.8rem;}
-        .badge-success{background:#c6f6d5;color:#276749;}
-        .badge-warning{background:#fefcbf;color:#975a16;}
-        .badge-info{background:#bee3f8;color:#2c5282;}
-        .badge-danger{background:#fed7d7;color:#9b2c2c;}
-        .btn{display:inline-block;padding:6px 12px;border-radius:5px;text-decoration:none;font-size:0.75rem;}
-        .btn-primary{background:#3182ce;color:white;}
-        .btn-success{background:#38a169;color:white;}
-        .btn-danger{background:#e53e3e;color:white;}
-        .filtros{margin-bottom:15px;}
-        .filtro-btn{padding:8px 15px;margin-right:10px;border-radius:5px;text-decoration:none;background:#e2e8f0;color:#1a3a5c;}
-        .filtro-btn.activo{background:#1a3a5c;color:white;}
-        .text-muted{color:#718096;}
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        font-family: "Segoe UI", sans-serif;
+        background: #f7fafc;
+        display: flex;
+      }
+
+      .sidebar {
+        width: 250px;
+        background: linear-gradient(
+          180deg,
+          #1a1a2e 0%,
+          #16213e 50%,
+          #0f3460 100%
+        );
+        min-height: 100vh;
+        padding: 20px;
+        color: white;
+        position: fixed;
+        left: 0;
+        top: 0;
+        bottom: 0;
+      }
+      .sidebar-header {
+        text-align: center;
+        margin-bottom: 30px;
+        padding-bottom: 20px;
+        border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+      }
+      .sidebar-icon {
+        width: 65px;
+        height: 65px;
+        background: linear-gradient(135deg, #e94560, #c23152);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 12px;
+        font-size: 2rem;
+        box-shadow: 0 5px 20px rgba(233, 69, 96, 0.4);
+      }
+      .sidebar-title {
+        font-size: 1.2rem;
+        font-weight: bold;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        background: linear-gradient(135deg, #e94560, #ff6b6b);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+      .sidebar-subtitle {
+        font-size: 0.7rem;
+        color: #a0a0b8;
+        margin-top: 4px;
+        letter-spacing: 1px;
+      }
+      .sidebar a {
+        display: block;
+        color: #e2e8f0;
+        text-decoration: none;
+        padding: 12px 15px;
+        margin: 5px 0;
+        border-radius: 8px;
+        transition: all 0.3s;
+      }
+      .sidebar a:hover {
+        background: rgba(255, 255, 255, 0.1);
+        color: white;
+        transform: translateX(5px);
+      }
+      .sidebar a.active {
+        background: rgba(233, 69, 96, 0.3);
+        font-weight: bold;
+        border-left: 3px solid #e94560;
+      }
+
+      .main {
+        flex: 1;
+        padding: 30px;
+        margin-left: 250px;
+      }
+      .header {
+        background: white;
+        padding: 20px;
+        border-radius: 15px;
+        margin-bottom: 25px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+      }
+
+      .stats {
+        display: flex;
+        gap: 20px;
+        flex-wrap: wrap;
+        margin-bottom: 25px;
+      }
+      .stat-card {
+        background: white;
+        padding: 20px;
+        border-radius: 15px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        flex: 1;
+        min-width: 150px;
+        text-align: center;
+        transition: transform 0.3s;
+      }
+      .stat-card:hover {
+        transform: translateY(-5px);
+      }
+      .stat-card i {
+        font-size: 2rem;
+        margin-bottom: 10px;
+      }
+      .stat-card h3 {
+        font-size: 2rem;
+      }
+      .stat-card p {
+        color: #718096;
+      }
+
+      .filtros {
+        margin-bottom: 20px;
+        text-align: center;
+      }
+      .filtro-btn {
+        padding: 8px 18px;
+        margin: 0 3px;
+        border-radius: 25px;
+        text-decoration: none;
+        font-weight: 600;
+        transition: all 0.3s;
+        display: inline-block;
+      }
+      .filtro-btn.activo {
+        background: #e94560;
+        color: white;
+      }
+      .filtro-btn:not(.activo) {
+        background: #e2e8f0;
+        color: #1a3a5c;
+      }
+      .filtro-btn:not(.activo):hover {
+        background: #cbd5e0;
+      }
+
+      .curso-section {
+        background: white;
+        border-radius: 15px;
+        padding: 0;
+        margin-bottom: 25px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        overflow: hidden;
+      }
+      .curso-header {
+        background: linear-gradient(135deg, #1a1a2e, #0f3460);
+        color: white;
+        padding: 15px 25px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .curso-header h5 {
+        margin: 0;
+        font-size: 1.1rem;
+      }
+      .curso-badge {
+        background: rgba(255, 255, 255, 0.2);
+        padding: 5px 15px;
+        border-radius: 20px;
+        font-size: 0.85rem;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      th,
+      td {
+        padding: 12px 15px;
+        text-align: left;
+        border-bottom: 1px solid #e2e8f0;
+      }
+      th {
+        background: #f7fafc;
+        color: #1a1a2e;
+        font-weight: 600;
+        font-size: 0.8rem;
+      }
+      td {
+        font-size: 0.85rem;
+      }
+      tbody tr:hover {
+        background: #f7fafc;
+      }
+
+      .badge {
+        padding: 5px 12px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: bold;
+      }
+      .badge-success {
+        background: #c6f6d5;
+        color: #276749;
+      }
+      .badge-warning {
+        background: #fefcbf;
+        color: #975a16;
+      }
+      .badge-info {
+        background: #bee3f8;
+        color: #2c5282;
+      }
+      .badge-danger {
+        background: #fed7d7;
+        color: #9b2c2c;
+      }
+
+      .btn {
+        display: inline-block;
+        padding: 6px 14px;
+        border-radius: 25px;
+        text-decoration: none;
+        font-size: 0.8rem;
+        font-weight: 600;
+        transition: all 0.3s;
+      }
+      .btn:hover {
+        transform: scale(1.05);
+      }
+      .btn-primary {
+        background: #3182ce;
+        color: white;
+      }
+      .btn-primary:hover {
+        color: white;
+      }
+
+      .text-muted {
+        color: #718096;
+      }
+      .empty-state {
+        text-align: center;
+        padding: 60px;
+        color: #718096;
+      }
+      .empty-state i {
+        font-size: 4rem;
+        margin-bottom: 15px;
+        color: #cbd5e0;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <div class="sidebar">
-        <h2>⚙️ Admin Panel</h2>
-        <a href="/admin/dashboard">📊 Dashboard</a>
-        <a href="/admin/usuarios">👥 Usuarios</a>
-        <a href="/cursos">📚 Cursos</a>
-        <a href="/horarios">🕐 Horarios</a>
-        <a href="/materiales">📁 Materiales</a>
-        <a href="/admin/inscripciones">📋 Inscripciones</a>
-        <a href="/admin/reportes">📋 Reportes</a>
-        <a href="/perfil">👤 Mi Perfil</a>
-        <a href="/auth/logout">🚪 Cerrar Sesión</a>
+      <div class="sidebar-header">
+        <div class="sidebar-icon">🛡️</div>
+        <div class="sidebar-title">Admin Panel</div>
+        <div class="sidebar-subtitle">Control Total</div>
+      </div>
+      <a href="/admin/dashboard"
+        ><i class="fas fa-tachometer-alt me-2"></i>Dashboard</a
+      >
+      <a href="/admin/usuarios"><i class="fas fa-users me-2"></i>Usuarios</a>
+      <a href="/cursos"><i class="fas fa-book me-2"></i>Cursos</a>
+      <a href="/horarios"><i class="fas fa-clock me-2"></i>Horarios</a>
+      <a href="/materiales"><i class="fas fa-folder me-2"></i>Materiales</a>
+      <a href="/admin/inscripciones" class="active"
+        ><i class="fas fa-file-alt me-2"></i>Inscripciones</a
+      >
+      <a href="/admin/reportes"
+        ><i class="fas fa-chart-bar me-2"></i>Reportes</a
+      >
+      <a href="/perfil"><i class="fas fa-user me-2"></i>Mi Perfil</a>
+      <a href="/auth/logout"
+        ><i class="fas fa-sign-out-alt me-2"></i>Cerrar Sesión</a
+      >
     </div>
+
     <div class="main">
-        <div class="header"><h1>📋 Gestión de Inscripciones</h1></div>
+      <div
+        th:if="${success}"
+        class="alert alert-success alert-dismissible fade show"
+      >
+        <i class="fas fa-check-circle me-2"></i
+        ><span th:text="${success}"></span>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="alert"
+        ></button>
+      </div>
 
-        <div class="stats">
-            <div class="stat-card"><h3 style="color:#d69e2e;" th:text="${pendientesPago}">0</h3><p>Pendientes de Pago</p></div>
-            <div class="stat-card"><h3 style="color:#3182ce;" th:text="${pagoVerificacion}">0</h3><p>En Verificación</p></div>
-            <div class="stat-card"><h3 style="color:#38a169;" th:text="${activas}">0</h3><p>Activas</p></div>
+      <div class="header">
+        <h1 style="color: #1a1a2e">
+          <i class="fas fa-file-alt me-2"></i>Gestión de Inscripciones
+        </h1>
+      </div>
+
+      <!-- ESTADÍSTICAS -->
+      <div class="stats">
+        <div class="stat-card">
+          <i class="fas fa-clock" style="color: #d69e2e"></i>
+          <h3 style="color: #d69e2e" th:text="${pendientesPago}">0</h3>
+          <p>Pendientes de Pago</p>
         </div>
-
-        <div class="filtros">
-            <a href="?filtro=TODAS" class="filtro-btn" th:classappend="${filtroActual == 'TODAS'} ? 'activo' : ''">Todas</a>
-            <a href="?filtro=PENDIENTE_PAGO" class="filtro-btn" th:classappend="${filtroActual == 'PENDIENTE_PAGO'} ? 'activo' : ''">Pendientes Pago</a>
-            <a href="?filtro=PAGO_VERIFICACION" class="filtro-btn" th:classappend="${filtroActual == 'PAGO_VERIFICACION'} ? 'activo' : ''">En Verificación</a>
-            <a href="?filtro=ACTIVA" class="filtro-btn" th:classappend="${filtroActual == 'ACTIVA'} ? 'activo' : ''">Activas</a>
+        <div class="stat-card">
+          <i class="fas fa-search" style="color: #3182ce"></i>
+          <h3 style="color: #3182ce" th:text="${pagoVerificacion}">0</h3>
+          <p>En Verificación</p>
         </div>
+        <div class="stat-card">
+          <i class="fas fa-check-circle" style="color: #38a169"></i>
+          <h3 style="color: #38a169" th:text="${activas}">0</h3>
+          <p>Activas</p>
+        </div>
+      </div>
 
-        <table>
+      <!-- FILTROS -->
+      <div class="filtros">
+        <a
+          href="?filtro=TODAS"
+          class="filtro-btn"
+          th:classappend="${filtroActual == 'TODAS'} ? 'activo' : ''"
+        >
+          <i class="fas fa-list me-1"></i>Todas
+        </a>
+        <a
+          href="?filtro=PENDIENTE_PAGO"
+          class="filtro-btn"
+          th:classappend="${filtroActual == 'PENDIENTE_PAGO'} ? 'activo' : ''"
+        >
+          Pendientes Pago
+        </a>
+        <a
+          href="?filtro=PAGO_VERIFICACION"
+          class="filtro-btn"
+          th:classappend="${filtroActual == 'PAGO_VERIFICACION'} ? 'activo' : ''"
+        >
+          En Verificación
+        </a>
+        <a
+          href="?filtro=ACTIVA"
+          class="filtro-btn"
+          th:classappend="${filtroActual == 'ACTIVA'} ? 'activo' : ''"
+        >
+          Activas
+        </a>
+      </div>
+
+      <!-- INSCRIPCIONES AGRUPADAS POR CURSO -->
+      <div th:each="entry : ${inscripcionesPorCurso}" class="curso-section">
+        <div class="curso-header">
+          <h5>
+            <i class="fas fa-book me-2"></i><span th:text="${entry.key}"></span>
+          </h5>
+          <span
+            class="curso-badge"
+            th:text="${entry.value.size() + ' alumno(s)'}"
+          ></span>
+        </div>
+        <div style="padding: 0">
+          <table>
             <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Alumno</th>
-                    <th>Curso</th>
-                    <th>Horario</th>
-                    <th>Estado</th>
-                    <th>Comprobante</th>
-                    <th>Acciones</th>
-                </tr>
+              <tr>
+                <th>ID</th>
+                <th>Alumno</th>
+                <th>Horario</th>
+                <th>Estado</th>
+                <th>Comprobante</th>
+                <th>Acciones</th>
+              </tr>
             </thead>
             <tbody>
-                <tr th:each="inscripcion : ${inscripciones}">
-                    <td th:text="${inscripcion.id}">1</td>
-                    <td th:text="${inscripcion.usuario.nombre} + ' ' + ${inscripcion.usuario.apellido}">Carlos Martínez</td>
-                    <td th:text="${inscripcion.curso.nombre}">Robótica</td>
-                    <td th:text="${inscripcion.reserva != null and inscripcion.reserva.horario != null ? inscripcion.reserva.horario.diaSemana + ' ' + inscripcion.reserva.horario.horaInicio : 'N/A'}">Lunes 16:00</td>
-                    <td>
-                        <span class="badge" 
-                              th:class="${inscripcion.estado == 'ACTIVA' ? 'badge-success' : (inscripcion.estado == 'PENDIENTE_PAGO' ? 'badge-warning' : 'badge-info')}">
-                            <span th:text="${inscripcion.estado == 'PENDIENTE_PAGO' ? 'PENDIENTE PAGO' : (inscripcion.estado == 'PAGO_VERIFICACION' ? 'VERIFICANDO' : inscripcion.estado)}"></span>
-                        </span>
-                    </td>
-                    <td>
-                        <a th:href="${inscripcion.comprobantePagoUrl}" target="_blank" th:if="${inscripcion.comprobantePagoUrl != null}" class="btn btn-primary">Ver</a>
-                        <span th:unless="${inscripcion.comprobantePagoUrl != null}" class="text-muted">No subido</span>
-                    </td>
-                    <td>
-                        <a th:href="@{/admin/inscripciones/detalle/{id}(id=${inscripcion.id})}" class="btn btn-primary">👁️ Ver</a>
-                    </td>
-                </tr>
-                <tr th:if="${#lists.isEmpty(inscripciones)}">
-                    <td colspan="7" style="text-align:center;">No hay inscripciones registradas.</td>
-                </tr>
+              <tr th:each="inscripcion : ${entry.value}">
+                <td th:text="${inscripcion.id}">1</td>
+                <td>
+                  <strong
+                    th:text="${inscripcion.usuario.nombre} + ' ' + ${inscripcion.usuario.apellido}"
+                  ></strong>
+                </td>
+                <td
+                  th:text="${inscripcion.reserva != null and inscripcion.reserva.horario != null ? inscripcion.reserva.horario.diaSemana + ' ' + inscripcion.reserva.horario.horaInicio : 'N/A'}"
+                >
+                  Lunes 16:00
+                </td>
+                <td>
+                  <span
+                    class="badge"
+                    th:class="${inscripcion.estado == 'ACTIVA' ? 'badge-success' : (inscripcion.estado == 'PENDIENTE_PAGO' ? 'badge-warning' : (inscripcion.estado == 'PAGO_VERIFICACION' ? 'badge-info' : 'badge-danger'))}"
+                  >
+                    <span
+                      th:text="${inscripcion.estado == 'PENDIENTE_PAGO' ? 'PENDIENTE PAGO' : (inscripcion.estado == 'PAGO_VERIFICACION' ? 'VERIFICANDO' : inscripcion.estado)}"
+                    ></span>
+                  </span>
+                </td>
+                <td>
+                  <a
+                    th:href="${inscripcion.comprobantePagoUrl}"
+                    target="_blank"
+                    th:if="${inscripcion.comprobantePagoUrl != null}"
+                    class="btn btn-primary"
+                    >Ver</a
+                  >
+                  <span
+                    th:unless="${inscripcion.comprobantePagoUrl != null}"
+                    class="text-muted"
+                    >No subido</span
+                  >
+                </td>
+                <td>
+                  <a
+                    th:href="@{/admin/inscripciones/detalle/{id}(id=${inscripcion.id})}"
+                    class="btn btn-primary"
+                    >👁️ Ver</a
+                  >
+                </td>
+              </tr>
             </tbody>
-        </table>
+          </table>
+        </div>
+      </div>
+
+      <!-- SIN RESULTADOS -->
+      <div
+        th:if="${#maps.isEmpty(inscripcionesPorCurso)}"
+        class="curso-section"
+      >
+        <div class="empty-state">
+          <i class="fas fa-inbox"></i>
+          <h3>No hay inscripciones</h3>
+        </div>
+      </div>
     </div>
-</body>
-</html> 
+  </body>
+</html>

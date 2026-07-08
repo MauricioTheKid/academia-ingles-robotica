@@ -1,17 +1,26 @@
 package com.academia.inglesrobotica.controller;
 
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
 import com.academia.inglesrobotica.model.Inscripcion;
 import com.academia.inglesrobotica.model.Pago;
 import com.academia.inglesrobotica.service.InscripcionService;
 import com.academia.inglesrobotica.service.PagoService;
-import jakarta.servlet.http.HttpSession;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.util.List;
+import jakarta.servlet.http.HttpSession;
 
 @Controller
 @RequestMapping("/admin/inscripciones")
@@ -25,7 +34,7 @@ public class AdminInscripcionController {
 
     @GetMapping
     public String listar(Model model, HttpSession session,
-                         @RequestParam(defaultValue = "TODAS") String filtro) {
+            @RequestParam(defaultValue = "TODAS") String filtro) {
         String email = (String) session.getAttribute("usuarioEmail");
         if (email == null || !email.equals("admin@test.com")) {
             return "redirect:/auth/login";
@@ -38,7 +47,14 @@ public class AdminInscripcionController {
             inscripciones = inscripcionService.findByEstado(filtro);
         }
 
-        model.addAttribute("inscripciones", inscripciones);
+        // Agrupar por curso
+        Map<String, List<Inscripcion>> inscripcionesPorCurso = new LinkedHashMap<>();
+        for (Inscripcion ins : inscripciones) {
+            String cursoNombre = ins.getCurso().getNombre();
+            inscripcionesPorCurso.computeIfAbsent(cursoNombre, k -> new ArrayList<>()).add(ins);
+        }
+
+        model.addAttribute("inscripcionesPorCurso", inscripcionesPorCurso);
         model.addAttribute("filtroActual", filtro);
         model.addAttribute("pendientesPago", inscripcionService.countByEstado("PENDIENTE_PAGO"));
         model.addAttribute("pagoVerificacion", inscripcionService.countByEstado("PAGO_VERIFICACION"));
@@ -65,9 +81,9 @@ public class AdminInscripcionController {
 
     @PostMapping("/verificar-pago/{id}")
     public String verificarPago(@PathVariable Long id,
-                                 @RequestParam boolean aprobado,
-                                 @RequestParam(required = false) String observaciones,
-                                 RedirectAttributes redirectAttributes) {
+            @RequestParam boolean aprobado,
+            @RequestParam(required = false) String observaciones,
+            RedirectAttributes redirectAttributes) {
         try {
             pagoService.verificarPago(id, aprobado, observaciones);
             String mensaje = aprobado ? "✅ Pago verificado correctamente." : "❌ Pago rechazado.";
@@ -77,4 +93,4 @@ public class AdminInscripcionController {
         }
         return "redirect:/admin/inscripciones";
     }
-} 
+}

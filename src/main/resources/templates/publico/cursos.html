@@ -197,6 +197,28 @@
         margin-bottom: 20px;
         text-align: center;
       }
+
+      .btn-ver-horarios {
+        background: linear-gradient(135deg, #805ad5, #b794f4);
+        color: white;
+        padding: 8px 18px;
+        border-radius: 25px;
+        text-decoration: none;
+        font-size: 0.85rem;
+        font-weight: 600;
+        transition: all 0.3s;
+        display: inline-block;
+      }
+      .btn-ver-horarios:hover {
+        transform: scale(1.05);
+        box-shadow: 0 5px 15px rgba(128, 90, 213, 0.4);
+      }
+
+      .text-muted-small {
+        color: #a0aec0;
+        font-size: 0.85rem;
+        font-style: italic;
+      }
     </style>
   </head>
   <body>
@@ -285,30 +307,50 @@
               >
             </td>
             <td>
-              <!-- SI HAY SESIÓN Y ES ALUMNO: MOSTRAR BOTÓN RESERVAR -->
-              <th:block
-                th:if="${session.usuarioEmail != null && session.usuarioEmail != 'admin@test.com'}"
-              >
-                <a
-                  th:href="@{/cursos/horarios/{id}(id=${curso.id})}"
-                  class="btn-reservar"
-                >
-                  <i class="fas fa-calendar-plus me-1"></i>Reservar
+              <!-- VISITANTE SIN SESIÓN: Botón para iniciar sesión -->
+              <th:block th:if="${session.usuarioEmail == null}">
+                <a href="/auth/login" class="btn-login-required">
+                  <i class="fas fa-sign-in-alt me-1"></i>Iniciar Sesión para
+                  Reservar
                 </a>
               </th:block>
 
-              <!-- SI NO HAY SESIÓN: MOSTRAR BOTÓN PARA INICIAR SESIÓN -->
+              <!-- ADMIN: Solo texto -->
+              <th:block th:if="${session.usuarioEmail == 'admin@test.com'}">
+                <span class="text-muted-small">Administrador</span>
+              </th:block>
+
+              <!-- USUARIO CON SESIÓN (Alumno, Profesor, Padre) -->
               <th:block
-                th:unless="${session.usuarioEmail != null && session.usuarioEmail != 'admin@test.com'}"
+                th:if="${session.usuarioEmail != null && session.usuarioEmail != 'admin@test.com'}"
               >
-                <th:block th:if="${session.usuarioEmail == null}">
-                  <a href="/auth/login" class="btn-login-required">
-                    <i class="fas fa-sign-in-alt me-1"></i>Iniciar Sesión para
-                    Reservar
+                <!-- SOLO ALUMNO ve el botón Reservar -->
+                <th:block
+                  th:if="${session.rolUsuario != null && session.rolUsuario.contains('ALUMNO')}"
+                >
+                  <a
+                    th:href="@{/cursos/horarios/{id}(id=${curso.id})}"
+                    class="btn-reservar"
+                  >
+                    <i class="fas fa-calendar-plus me-1"></i>Reservar
                   </a>
                 </th:block>
-                <th:block th:if="${session.usuarioEmail == 'admin@test.com'}">
-                  <span style="color: #718096; font-size: 0.85rem">Admin</span>
+                <!-- PROFESOR: Ve horarios pero no reserva -->
+                <th:block
+                  th:if="${session.rolUsuario != null && session.rolUsuario.contains('PROFESOR')}"
+                >
+                  <a
+                    th:href="@{/cursos/horarios/{id}(id=${curso.id})}"
+                    class="btn-ver-horarios"
+                  >
+                    <i class="fas fa-eye me-1"></i>Ver Horarios
+                  </a>
+                </th:block>
+                <!-- PADRE: No ve nada (solo monitoreo) -->
+                <th:block
+                  th:if="${session.rolUsuario != null && session.rolUsuario.contains('PADRE')}"
+                >
+                  <span class="text-muted-small">Solo consulta</span>
                 </th:block>
               </th:block>
             </td>

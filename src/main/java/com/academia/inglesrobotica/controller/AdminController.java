@@ -1,12 +1,10 @@
 package com.academia.inglesrobotica.controller;
 
-import com.academia.inglesrobotica.model.Calificacion;
-import com.academia.inglesrobotica.model.Reserva;
-import com.academia.inglesrobotica.service.CalificacionService;
-import com.academia.inglesrobotica.service.CursoService;
-import com.academia.inglesrobotica.service.ReservaService;
-import com.academia.inglesrobotica.service.UsuarioService;
-import jakarta.servlet.http.HttpSession;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -14,7 +12,14 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-import java.util.List;
+import com.academia.inglesrobotica.model.Calificacion;
+import com.academia.inglesrobotica.model.Reserva;
+import com.academia.inglesrobotica.service.CalificacionService;
+import com.academia.inglesrobotica.service.CursoService;
+import com.academia.inglesrobotica.service.ReservaService;
+import com.academia.inglesrobotica.service.UsuarioService;
+
+import jakarta.servlet.http.HttpSession;
 
 @Controller
 @RequestMapping("/admin")
@@ -28,7 +33,7 @@ public class AdminController {
 
     @Autowired
     private ReservaService reservaService;
-    
+
     @Autowired
     private CalificacionService calificacionService;
 
@@ -104,11 +109,20 @@ public class AdminController {
         model.addAttribute("pendientes", reservaService.findByEstado("PENDIENTE").size());
         model.addAttribute("confirmadas", reservaService.findByEstado("CONFIRMADA").size());
 
+        // Últimas reservas agrupadas por curso
         List<Reserva> ultimas = reservaService.findAll();
-        if (ultimas.size() > 5) {
-            ultimas = ultimas.subList(ultimas.size() - 5, ultimas.size());
+        if (ultimas.size() > 10) {
+            ultimas = ultimas.subList(ultimas.size() - 10, ultimas.size());
         }
-        model.addAttribute("ultimasReservas", ultimas);
+
+        // Agrupar reservas por curso
+        Map<String, List<Reserva>> reservasPorCurso = new LinkedHashMap<>();
+        for (Reserva r : ultimas) {
+            String cursoNombre = r.getHorario().getCurso().getNombre();
+            reservasPorCurso.computeIfAbsent(cursoNombre, k -> new ArrayList<>()).add(r);
+        }
+
+        model.addAttribute("reservasPorCurso", reservasPorCurso);
         model.addAttribute("cursosPopulares", cursoService.findAll());
 
         return "admin/reportes";
@@ -124,10 +138,19 @@ public class AdminController {
         }
 
         List<Calificacion> todas = calificacionService.findAll();
-        model.addAttribute("calificaciones", todas);
+
+        // Agrupar por curso
+        Map<String, List<Calificacion>> calificacionesPorCurso = new LinkedHashMap<>();
+        for (Calificacion cal : todas) {
+            String cursoNombre = cal.getInscripcion().getCurso().getNombre();
+            calificacionesPorCurso.computeIfAbsent(cursoNombre, k -> new ArrayList<>()).add(cal);
+        }
+
+        model.addAttribute("calificacionesPorCurso", calificacionesPorCurso);
         model.addAttribute("totalAprobados", calificacionService.countAprobados());
         model.addAttribute("totalReprobados", calificacionService.countReprobados());
+        model.addAttribute("totalCalificaciones", todas.size());
 
         return "admin/calificaciones";
     }
-} 
+}
