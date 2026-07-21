@@ -1,0 +1,163 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Clase Virtual - Academia San Luis</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+    />
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        font-family: "Segoe UI", sans-serif;
+        background: #0f0f1a;
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+      }
+
+      .header-bar {
+        background: linear-gradient(135deg, #1a1a2e, #16213e);
+        color: white;
+        padding: 12px 25px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        box-shadow: 0 2px 20px rgba(0, 0, 0, 0.3);
+      }
+      .header-left {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+      }
+      .header-icon {
+        width: 45px;
+        height: 45px;
+        background: rgba(56, 161, 105, 0.2);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.3rem;
+      }
+      .header-info h5 {
+        margin: 0;
+        font-size: 1rem;
+        font-weight: 700;
+      }
+      .header-info small {
+        color: #a0aec0;
+        font-size: 0.8rem;
+      }
+      .live-badge {
+        background: #38a169;
+        color: white;
+        padding: 6px 15px;
+        border-radius: 25px;
+        font-size: 0.8rem;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        animation: pulse-live 2s infinite;
+      }
+      @keyframes pulse-live {
+        0%,
+        100% {
+          box-shadow: 0 0 0 0 rgba(56, 161, 105, 0.4);
+        }
+        50% {
+          box-shadow: 0 0 0 10px rgba(56, 161, 105, 0);
+        }
+      }
+      .live-dot {
+        width: 8px;
+        height: 8px;
+        background: white;
+        border-radius: 50%;
+      }
+      .btn-exit {
+        background: rgba(255, 255, 255, 0.1);
+        color: white;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        padding: 8px 18px;
+        border-radius: 25px;
+        text-decoration: none;
+        font-size: 0.85rem;
+        transition: all 0.3s;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .btn-exit:hover {
+        background: rgba(229, 62, 62, 0.3);
+        color: white;
+        border-color: #e53e3e;
+      }
+
+      .meet-container {
+        flex: 1;
+        background: #000;
+      }
+      iframe {
+        width: 100%;
+        height: 100%;
+        border: none;
+      }
+
+      .footer-bar {
+        background: #1a1a2e;
+        color: #a0aec0;
+        text-align: center;
+        padding: 10px;
+        font-size: 0.8rem;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="header-bar">
+      <div class="header-left">
+        <div class="header-icon">
+          <i class="fas fa-video" style="color: #68d391"></i>
+        </div>
+        <div class="header-info">
+          <h5><span th:text="${horario.curso.nombre}"></span></h5>
+          <small
+            ><span
+              th:text="${horario.diaSemana} + ' | ' + ${horario.horaInicio} + ' - ' + ${horario.horaFin}"
+            ></span
+          ></small>
+        </div>
+      </div>
+      <div style="display: flex; align-items: center; gap: 15px">
+        <div class="live-badge"><span class="live-dot"></span> En vivo</div>
+        <a href="/alumno/dashboard" class="btn-exit">
+          <i class="fas fa-sign-out-alt"></i> Salir de la clase
+        </a>
+      </div>
+    </div>
+
+    <div class="meet-container">
+      <iframe
+        th:src="@{'https://meet.jit.si/' + ${horario.enlaceVirtual}}"
+        allow="camera; microphone; fullscreen; display-capture; autoplay"
+      >
+      </iframe>
+    </div>
+
+    <div class="footer-bar">
+      <i class="fas fa-shield-alt me-1"></i> Videollamada segura via Jitsi Meet
+      | Academia San Luis
+    </div>
+  </body>
+</html>

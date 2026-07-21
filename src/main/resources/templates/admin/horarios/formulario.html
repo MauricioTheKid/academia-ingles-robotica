@@ -1,55 +1,353 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title th:text="${horario.id != null ? 'Editar' : 'Nuevo'} + ' Horario'">Horario</title>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title th:text="${horario.id != null ? 'Editar Horario' : 'Nuevo Horario'}">
+      Horario - Admin
+    </title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+    />
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Segoe UI', sans-serif; background: #f7fafc; display: flex; }
-        .sidebar { width: 250px; background: #1a3a5c; min-height: 100vh; padding: 20px; color: white; }
-        .sidebar h2 { font-size: 1.2rem; margin-bottom: 25px; }
-        .sidebar a { display: block; color: #e2e8f0; text-decoration: none; padding: 10px; margin: 5px 0; border-radius: 6px; }
-        .main { flex: 1; padding: 30px; }
-        .header { background: white; padding: 20px; border-radius: 10px; margin-bottom: 25px; }
-        .form-container { background: white; padding: 30px; border-radius: 10px; max-width: 600px; }
-        .form-group { margin-bottom: 15px; }
-        .form-group label { display: block; font-weight: 600; margin-bottom: 5px; }
-        .form-group input, .form-group select { width: 100%; padding: 10px; border: 2px solid #e2e8f0; border-radius: 8px; }
-        .btn { padding: 12px 25px; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; }
-        .btn-primary { background: #3182ce; color: white; }
-        .btn-secondary { background: #e2e8f0; color: #2d3748; text-decoration: none; padding: 12px 25px; border-radius: 8px; }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        font-family: "Segoe UI", sans-serif;
+        background: #f7fafc;
+        display: flex;
+      }
+
+      .sidebar {
+        width: 260px;
+        background: linear-gradient(
+          180deg,
+          #0f0f1a 0%,
+          #1a1a2e 40%,
+          #16213e 100%
+        );
+        min-height: 100vh;
+        padding: 25px 20px;
+        color: white;
+        position: fixed;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        z-index: 100;
+      }
+      .sidebar-header {
+        text-align: center;
+        margin-bottom: 30px;
+        padding-bottom: 20px;
+        border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+      }
+      .sidebar-icon {
+        width: 70px;
+        height: 70px;
+        background: linear-gradient(135deg, #e94560, #c23152);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 12px;
+        font-size: 2rem;
+        box-shadow: 0 8px 25px rgba(233, 69, 96, 0.5);
+      }
+      .sidebar-title {
+        font-size: 1.3rem;
+        font-weight: 800;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        background: linear-gradient(135deg, #e94560, #ff6b6b);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+      .sidebar-subtitle {
+        font-size: 0.7rem;
+        color: #8a8a9a;
+        margin-top: 4px;
+        letter-spacing: 2px;
+      }
+      .sidebar a {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        color: #b0b0c0;
+        text-decoration: none;
+        padding: 13px 18px;
+        margin: 4px 0;
+        border-radius: 10px;
+        transition: all 0.3s;
+        font-size: 0.9rem;
+      }
+      .sidebar a i {
+        width: 20px;
+        text-align: center;
+      }
+      .sidebar a:hover {
+        background: rgba(255, 255, 255, 0.08);
+        color: white;
+        transform: translateX(5px);
+      }
+      .sidebar a.active {
+        background: rgba(233, 69, 96, 0.2);
+        color: white;
+        font-weight: bold;
+        border-left: 3px solid #e94560;
+      }
+
+      .main {
+        flex: 1;
+        padding: 30px;
+        margin-left: 260px;
+      }
+
+      .card-custom {
+        background: white;
+        border-radius: 20px;
+        padding: 30px;
+        max-width: 700px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+      }
+      h1 {
+        color: #1a1a2e;
+        margin-bottom: 10px;
+      }
+      .form-label {
+        font-weight: 600;
+        color: #2d3748;
+        margin-bottom: 6px;
+        font-size: 0.9rem;
+      }
+      .form-control {
+        width: 100%;
+        padding: 12px 15px;
+        border: 2px solid #e2e8f0;
+        border-radius: 10px;
+        font-size: 0.95rem;
+        transition: all 0.3s;
+        margin-bottom: 15px;
+      }
+      .form-control:focus {
+        outline: none;
+        border-color: #3182ce;
+        box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.2);
+      }
+      select.form-control {
+        background: white;
+        cursor: pointer;
+      }
+
+      .btn-submit {
+        background: linear-gradient(135deg, #e94560, #c23152);
+        color: white;
+        border: none;
+        padding: 14px 35px;
+        border-radius: 25px;
+        font-weight: 700;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: all 0.3s;
+        box-shadow: 0 5px 20px rgba(233, 69, 96, 0.4);
+      }
+      .btn-submit:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 30px rgba(233, 69, 96, 0.6);
+      }
+      .btn-cancel {
+        background: #e2e8f0;
+        color: #4a5568;
+        text-decoration: none;
+        padding: 14px 35px;
+        border-radius: 25px;
+        font-weight: 700;
+        font-size: 1rem;
+        transition: all 0.3s;
+        display: inline-block;
+      }
+      .btn-cancel:hover {
+        background: #cbd5e0;
+      }
+
+      .info-box {
+        background: #ebf8ff;
+        border-left: 4px solid #3182ce;
+        padding: 15px 20px;
+        border-radius: 10px;
+        margin-bottom: 20px;
+      }
+      .info-box i {
+        color: #3182ce;
+        margin-right: 8px;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <div class="sidebar">
-        <h2>Admin Panel</h2>
-        <a href="/admin/dashboard">Dashboard</a>
-        <a href="/admin/usuarios">Usuarios</a>
-        <a href="/cursos">Cursos</a>
-        <a href="/horarios">Horarios</a>
-        <a href="/auth/logout">Salir</a>
+      <div class="sidebar-header">
+        <div class="sidebar-icon">🛡️</div>
+        <div class="sidebar-title">Admin Panel</div>
+        <div class="sidebar-subtitle">CONTROL TOTAL</div>
+      </div>
+      <a href="/admin/dashboard"
+        ><i class="fas fa-tachometer-alt"></i>Dashboard</a
+      >
+      <a href="/admin/usuarios"><i class="fas fa-users"></i>Usuarios</a>
+      <a href="/cursos"><i class="fas fa-book"></i>Cursos</a>
+      <a href="/horarios" class="active"
+        ><i class="fas fa-clock"></i>Horarios</a
+      >
+      <a href="/materiales"><i class="fas fa-folder"></i>Materiales</a>
+      <a href="/admin/inscripciones"
+        ><i class="fas fa-file-alt"></i>Inscripciones</a
+      >
+      <a href="/admin/calificaciones"
+        ><i class="fas fa-star"></i>Calificaciones</a
+      >
+      <a href="/admin/reportes"><i class="fas fa-chart-bar"></i>Reportes</a>
+      <a href="/perfil"><i class="fas fa-user"></i>Mi Perfil</a>
+      <a href="/auth/logout"
+        ><i class="fas fa-sign-out-alt"></i>Cerrar Sesión</a
+      >
     </div>
+
     <div class="main">
-        <div class="header"><h1 th:text="${horario.id != null ? 'Editar' : 'Nuevo'} + ' Horario'">Horario</h1></div>
-        <div class="form-container">
-            <form th:action="@{/horarios/guardar}" th:object="${horario}" method="post">
-                <input type="hidden" th:field="*{id}">
-                <div class="form-group">
-                    <label>Curso</label>
-                    <select th:field="*{curso.id}" required>
-                        <option value="">Seleccione</option>
-                        <option th:each="curso : ${cursos}" th:value="${curso.id}" th:text="${curso.nombre}">Curso</option>
-                    </select>
-                </div>
-                <div class="form-group"><label>Día</label><input type="text" th:field="*{diaSemana}" required></div>
-                <div class="form-group"><label>Hora Inicio</label><input type="time" th:field="*{horaInicio}" required></div>
-                <div class="form-group"><label>Hora Fin</label><input type="time" th:field="*{horaFin}" required></div>
-                <div class="form-group"><label>Cupo Máximo</label><input type="number" th:field="*{cupoMaximo}" required></div>
-                <button type="submit" class="btn btn-primary">Guardar</button>
-                <a href="/horarios" class="btn btn-secondary">Cancelar</a>
-            </form>
-        </div>
+      <a href="/horarios" class="btn-cancel mb-4" style="display: inline-block">
+        <i class="fas fa-arrow-left me-2"></i>Volver a Horarios
+      </a>
+
+      <h1>
+        <i
+          class="fas me-2"
+          th:class="${horario.id != null ? 'fa-edit' : 'fa-plus-circle'}"
+          style="color: #e94560"
+        ></i>
+        <span
+          th:text="${horario.id != null ? 'Editar Horario' : 'Nuevo Horario'}"
+        ></span>
+      </h1>
+      <p style="color: #718096; margin-bottom: 25px">
+        Configura los detalles del horario de clase
+      </p>
+
+      <div class="card-custom">
+        <form
+          th:action="@{/horarios/guardar}"
+          th:object="${horario}"
+          method="post"
+        >
+          <input type="hidden" th:field="*{id}" />
+
+          <div class="mb-3">
+            <label class="form-label"
+              ><i class="fas fa-book me-2"></i>Curso</label
+            >
+            <select class="form-control" th:field="*{curso.id}" required>
+              <option value="">Selecciona un curso...</option>
+              <option
+                th:each="curso : ${cursos}"
+                th:value="${curso.id}"
+                th:text="${curso.nombre}"
+              ></option>
+            </select>
+          </div>
+
+          <div class="row">
+            <div class="col-md-4 mb-3">
+              <label class="form-label"
+                ><i class="fas fa-calendar-day me-2"></i>Día</label
+              >
+              <select class="form-control" th:field="*{diaSemana}" required>
+                <option value="">Día...</option>
+                <option value="Lunes">Lunes</option>
+                <option value="Martes">Martes</option>
+                <option value="Miércoles">Miércoles</option>
+                <option value="Jueves">Jueves</option>
+                <option value="Viernes">Viernes</option>
+                <option value="Sábado">Sábado</option>
+              </select>
+            </div>
+            <div class="col-md-4 mb-3">
+              <label class="form-label"
+                ><i class="fas fa-clock me-2"></i>Hora Inicio</label
+              >
+              <input
+                type="time"
+                class="form-control"
+                th:field="*{horaInicio}"
+                required
+              />
+            </div>
+            <div class="col-md-4 mb-3">
+              <label class="form-label"
+                ><i class="fas fa-clock me-2"></i>Hora Fin</label
+              >
+              <input
+                type="time"
+                class="form-control"
+                th:field="*{horaFin}"
+                required
+              />
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label"
+              ><i class="fas fa-users me-2"></i>Cupo Máximo</label
+            >
+            <input
+              type="number"
+              class="form-control"
+              th:field="*{cupoMaximo}"
+              min="1"
+              placeholder="Ej: 15"
+            />
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label"
+              ><i class="fas fa-video me-2"></i>Enlace de Clase Virtual (Jitsi
+              Meet)</label
+            >
+            <input
+              type="text"
+              class="form-control"
+              th:field="*{enlaceVirtual}"
+              placeholder="Ej: CursoRobotica-2026 (sin espacios)"
+            />
+            <small style="color: #718096">
+              <i class="fas fa-info-circle me-1"></i>
+              Se generará automáticamente: meet.jit.si/<strong
+                >TU-ENLACE</strong
+              >
+            </small>
+          </div>
+
+          <div class="info-box">
+            <i class="fas fa-lightbulb"></i>
+            <strong>¿Cómo funciona?</strong> Los alumnos verán un botón "📹
+            Unirse a Clase Virtual" que abrirá la videollamada de Jitsi Meet con
+            el enlace que configures aquí.
+          </div>
+
+          <div style="display: flex; gap: 15px; margin-top: 25px">
+            <button type="submit" class="btn-submit">
+              <i class="fas fa-save me-2"></i>
+              <span
+                th:text="${horario.id != null ? 'Actualizar Horario' : 'Crear Horario'}"
+              ></span>
+            </button>
+            <a href="/horarios" class="btn-cancel">
+              <i class="fas fa-times me-2"></i>Cancelar
+            </a>
+          </div>
+        </form>
+      </div>
     </div>
-</body>
+  </body>
 </html>

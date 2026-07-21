@@ -20,7 +20,6 @@
         display: flex;
       }
 
-      /* SIDEBAR CON EFECTO HOVER (BAMBOLEO) */
       .sidebar {
         width: 250px;
         background: linear-gradient(180deg, #1a3a5c 0%, #2c5282 100%);
@@ -148,7 +147,7 @@
       }
       th,
       td {
-        padding: 14px;
+        padding: 12px 14px;
         text-align: left;
         border-bottom: 1px solid #e2e8f0;
       }
@@ -175,16 +174,12 @@
         background: #fefcbf;
         color: #975a16;
       }
-      .badge-danger {
-        background: #fed7d7;
-        color: #c53030;
-      }
       .badge-info {
         background: #bee3f8;
         color: #2a4365;
       }
 
-      .btn-action {
+      .btn-calificar {
         background: linear-gradient(45deg, #667eea, #764ba2);
         color: white;
         border: none;
@@ -195,9 +190,53 @@
         display: inline-block;
         font-size: 0.85rem;
       }
-      .btn-action:hover {
+      .btn-calificar:hover {
         transform: scale(1.05);
         color: white;
+      }
+
+      .btn-clase {
+        background: linear-gradient(135deg, #38a169, #68d391);
+        color: white;
+        padding: 8px 18px;
+        border-radius: 25px;
+        text-decoration: none;
+        font-weight: 700;
+        font-size: 0.85rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        transition: all 0.3s;
+      }
+      .btn-clase:hover {
+        transform: scale(1.05);
+        color: white;
+        box-shadow: 0 5px 15px rgba(56, 161, 105, 0.4);
+      }
+      .btn-clase-outline {
+        border: 2px solid #38a169;
+        color: #38a169;
+        background: transparent;
+        padding: 8px 18px;
+        border-radius: 25px;
+        text-decoration: none;
+        font-weight: 700;
+        font-size: 0.85rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        transition: all 0.3s;
+      }
+      .btn-clase-outline:hover {
+        background: #38a169;
+        color: white;
+        transform: scale(1.05);
+      }
+
+      .sin-enlace {
+        color: #a0aec0;
+        font-size: 0.8rem;
+        font-style: italic;
       }
 
       .empty-state {
@@ -246,26 +285,93 @@
         <div class="card">
           <i class="fas fa-book-open" style="color: #4299e1"></i>
           <h3 th:text="${totalCursos}">0</h3>
-          <p>Cursos Disponibles</p>
+          <p>Cursos Asignados</p>
         </div>
         <div class="card">
           <i class="fas fa-user-graduate" style="color: #48bb78"></i>
-          <h3
-            th:text="${totalAlumnosActivos != null ? totalAlumnosActivos : 0}"
-          >
-            0
-          </h3>
+          <h3 th:text="${totalAlumnosActivos}">0</h3>
           <p>Alumnos Activos</p>
         </div>
         <div class="card">
           <i class="fas fa-star" style="color: #ed8936"></i>
-          <h3
-            th:text="${calificacionesPendientes != null ? calificacionesPendientes : 0}"
-          >
-            0
-          </h3>
+          <h3 th:text="${calificacionesPendientes}">0</h3>
           <p>Calificaciones Pendientes</p>
         </div>
+      </div>
+
+      <!-- MIS CLASES (CON BOTÓN VIRTUAL) -->
+      <div class="section">
+        <h2><i class="fas fa-video me-2"></i>Mis Clases Virtuales</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Curso</th>
+              <th>Día</th>
+              <th>Horario</th>
+              <th>Alumnos</th>
+              <th>Clase Virtual</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr th:each="curso : ${cursosAsignados}">
+              <td><strong th:text="${curso.nombre}">Curso</strong></td>
+              <td>
+                <span
+                  th:each="horario : ${curso.horarios}"
+                  th:text="${horario.diaSemana}"
+                  >Día</span
+                >
+              </td>
+              <td>
+                <span
+                  th:each="horario : ${curso.horarios}"
+                  th:text="${horario.horaInicio} + ' - ' + ${horario.horaFin}"
+                  >Horario</span
+                >
+              </td>
+              <td>
+                <span
+                  class="badge badge-info"
+                  th:text="${totalAlumnosActivos} + ' alumnos'"
+                  >0</span
+                >
+              </td>
+              <td>
+                <!-- SI TIENE ENLACE VIRTUAL -->
+                <th:block
+                  th:each="horario : ${curso.horarios}"
+                  th:if="${horario.enlaceVirtual != null}"
+                >
+                  <a
+                    th:href="@{/alumno/clase-virtual/{id}(id=${horario.id})}"
+                    target="_blank"
+                    class="btn-clase"
+                  >
+                    <i class="fas fa-video"></i> Iniciar Clase Virtual
+                  </a>
+                </th:block>
+                <!-- SIN ENLACE -->
+                <th:block
+                  th:each="horario : ${curso.horarios}"
+                  th:if="${horario.enlaceVirtual == null}"
+                >
+                  <span class="sin-enlace">
+                    <i class="fas fa-info-circle me-1"></i>Sin enlace
+                    configurado
+                  </span>
+                </th:block>
+              </td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(cursosAsignados)}">
+              <td colspan="5">
+                <div class="empty-state">
+                  <i class="fas fa-video"></i>
+                  <p>No tienes cursos asignados.</p>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
 
       <!-- ALUMNOS ACTIVOS -->
@@ -293,21 +399,19 @@
               <td
                 th:text="${inscripcion.reserva.horario.diaSemana} + ' ' + ${inscripcion.reserva.horario.horaInicio} + ' - ' + ${inscripcion.reserva.horario.horaFin}"
               ></td>
-              <td>
-                <span class="badge badge-success">Activo</span>
-              </td>
+              <td><span class="badge badge-success">Activo</span></td>
               <td>
                 <th:block
-                  th:if="${mapaCalificaciones != null && mapaCalificaciones.containsKey(inscripcion.id)}"
+                  th:if="${mapaCalificaciones.containsKey(inscripcion.id)}"
                 >
                   <span
                     class="badge"
-                    th:classappend="${mapaCalificaciones[inscripcion.id].colorEstado == 'success' ? 'badge-success' : (mapaCalificaciones[inscripcion.id].colorEstado == 'warning' ? 'badge-warning' : 'badge-danger')}"
+                    th:classappend="${mapaCalificaciones[inscripcion.id].colorEstado == 'success' ? 'badge-success' : (mapaCalificaciones[inscripcion.id].colorEstado == 'warning' ? 'badge-warning' : 'badge-info')}"
                     th:text="${mapaCalificaciones[inscripcion.id].promedio}"
                   ></span>
                 </th:block>
                 <th:block
-                  th:unless="${mapaCalificaciones != null && mapaCalificaciones.containsKey(inscripcion.id)}"
+                  th:unless="${mapaCalificaciones.containsKey(inscripcion.id)}"
                 >
                   <span class="badge badge-info">Sin notas</span>
                 </th:block>
@@ -315,7 +419,7 @@
               <td>
                 <a
                   th:href="@{/profesor/calificar/{id}(id=${inscripcion.id})}"
-                  class="btn-action"
+                  class="btn-calificar"
                 >
                   <i class="fas fa-edit me-1"></i>Calificar
                 </a>
@@ -326,37 +430,6 @@
                 <div class="empty-state">
                   <i class="fas fa-users"></i>
                   <p>No hay alumnos activos en este momento.</p>
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <!-- PRÓXIMAS CLASES -->
-      <div class="section">
-        <h2><i class="fas fa-calendar-alt me-2"></i>Próximas Clases</h2>
-        <table>
-          <thead>
-            <tr>
-              <th>Curso</th>
-              <th>Día</th>
-              <th>Horario</th>
-              <th>Alumnos Inscritos</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr th:each="curso : ${cursosActivos}">
-              <td th:text="${curso.nombre}"></td>
-              <td>--</td>
-              <td>--</td>
-              <td>--</td>
-            </tr>
-            <tr th:if="${#lists.isEmpty(cursosActivos)}">
-              <td colspan="4">
-                <div class="empty-state">
-                  <i class="fas fa-calendar-alt"></i>
-                  <p>No hay cursos con horarios asignados.</p>
                 </div>
               </td>
             </tr>

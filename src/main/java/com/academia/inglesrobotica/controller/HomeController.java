@@ -19,10 +19,12 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.academia.inglesrobotica.model.Calificacion;
 import com.academia.inglesrobotica.model.Curso;
+import com.academia.inglesrobotica.model.Horario;
 import com.academia.inglesrobotica.model.Inscripcion;
 import com.academia.inglesrobotica.model.Pago;
 import com.academia.inglesrobotica.model.Reserva;
 import com.academia.inglesrobotica.model.Usuario;
+import com.academia.inglesrobotica.repository.HorarioRepository;
 import com.academia.inglesrobotica.service.CalificacionService;
 import com.academia.inglesrobotica.service.CursoService;
 import com.academia.inglesrobotica.service.InscripcionService;
@@ -56,6 +58,9 @@ public class HomeController {
 
     @Autowired
     private ProfesorCursoService profesorCursoService;
+
+    @Autowired
+    private HorarioRepository horarioRepository;
 
     @GetMapping("/")
     public String index() {
@@ -114,6 +119,22 @@ public class HomeController {
         model.addAttribute("calificaciones", calificaciones);
 
         return "alumno/calificaciones";
+    }
+
+    // ==================== CLASE VIRTUAL ====================
+
+    @GetMapping("/alumno/clase-virtual/{horarioId}")
+    public String claseVirtual(@PathVariable Long horarioId, HttpSession session, Model model) {
+        Long usuarioId = (Long) session.getAttribute("usuarioId");
+        if (usuarioId == null) {
+            return "redirect:/auth/login";
+        }
+
+        Horario horario = horarioRepository.findById(horarioId)
+                .orElseThrow(() -> new RuntimeException("Horario no encontrado"));
+
+        model.addAttribute("horario", horario);
+        return "alumno/clase-virtual";
     }
 
     // ==================== PADRE ====================
@@ -229,14 +250,12 @@ public class HomeController {
             return "redirect:/auth/login";
         }
 
-        // Cursos asignados al profesor
         List<Curso> cursosAsignados = profesorCursoService.findCursosByProfesorId(usuarioId);
         List<Long> cursoIds = profesorCursoService.findCursoIdsByProfesorId(usuarioId);
 
         model.addAttribute("totalCursos", cursosAsignados.size());
         model.addAttribute("cursosAsignados", cursosAsignados);
 
-        // Alumnos activos SOLO de los cursos del profesor
         List<Inscripcion> inscripcionesActivas = inscripcionService.findByEstado("ACTIVA");
         List<Inscripcion> misAlumnos = new ArrayList<>();
 
@@ -249,7 +268,6 @@ public class HomeController {
         model.addAttribute("inscripcionesActivas", misAlumnos);
         model.addAttribute("totalAlumnosActivos", misAlumnos.size());
 
-        // Mapa de calificaciones
         Map<Long, Calificacion> mapaCalificaciones = new HashMap<>();
         long calificacionesPendientes = 0;
 
@@ -265,7 +283,6 @@ public class HomeController {
         model.addAttribute("mapaCalificaciones", mapaCalificaciones);
         model.addAttribute("calificacionesPendientes", calificacionesPendientes);
 
-        // Agrupar alumnos por curso
         Map<String, List<Inscripcion>> alumnosPorCurso = new HashMap<>();
         for (Inscripcion ins : misAlumnos) {
             String cursoNombre = ins.getCurso().getNombre();
@@ -283,14 +300,12 @@ public class HomeController {
             return "redirect:/auth/login";
         }
 
-        // Solo cursos del profesor
         List<Long> cursoIds = profesorCursoService.findCursoIdsByProfesorId(usuarioId);
 
         List<Inscripcion> inscripcionesActivas = inscripcionService.findByEstado("ACTIVA");
         List<Inscripcion> inscripcionesPendientes = inscripcionService.findByEstado("PENDIENTE_PAGO");
         List<Inscripcion> inscripcionesVerificacion = inscripcionService.findByEstado("PAGO_VERIFICACION");
 
-        // Filtrar por cursos del profesor
         List<Inscripcion> misActivas = new ArrayList<>();
         List<Inscripcion> misPendientes = new ArrayList<>();
         List<Inscripcion> misVerificacion = new ArrayList<>();
@@ -343,7 +358,6 @@ public class HomeController {
             return "redirect:/auth/login";
         }
 
-        // Solo cursos del profesor
         List<Long> cursoIds = profesorCursoService.findCursoIdsByProfesorId(usuarioId);
 
         List<Inscripcion> inscripcionesActivas = inscripcionService.findByEstado("ACTIVA");
@@ -361,7 +375,6 @@ public class HomeController {
                     .ifPresent(cal -> mapaCalificaciones.put(ins.getId(), cal));
         }
 
-        // Agrupar por curso
         Map<String, List<Inscripcion>> alumnosPorCurso = new HashMap<>();
         for (Inscripcion ins : misAlumnos) {
             String cursoNombre = ins.getCurso().getNombre();
